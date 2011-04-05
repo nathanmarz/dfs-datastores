@@ -53,7 +53,9 @@ public class PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
         public PailRecordWriter(JobConf conf, String unique, Progressable p) throws IOException {
             PailSpec spec = (PailSpec) Utils.getObject(conf, SPEC_ARG);
             Pail.create(getOutputPath(conf).toString(), spec,  false);
-            _pail = Pail.create(getWorkOutputPath(conf).toString(),spec, false);
+            // this is a hack to get the work output directory since it's not exposed directly. instead it only 
+            // provides a path to a particular file.
+            _pail = Pail.create(FileOutputFormat.getTaskOutputPath(conf, unique).getParent().toString(), spec, false);
             _unique = unique;
         }
 
