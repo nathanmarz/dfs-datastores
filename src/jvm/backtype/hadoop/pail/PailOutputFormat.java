@@ -76,7 +76,7 @@ public class PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
                 }
                 numFilesOpened++;
                 LOG.info("Opening " + filename + " for attribute " + attr);
-                oaf = new OpenAttributeFile(attr, filename, _pail.openWrite(filename));
+                oaf = new OpenAttributeFile(attr, filename, _pail.openWrite(filename, true));
                 _outputters.put(attr, oaf);
             }
             oaf.os.writeRaw(v.getBytes(), 0, v.getLength());
