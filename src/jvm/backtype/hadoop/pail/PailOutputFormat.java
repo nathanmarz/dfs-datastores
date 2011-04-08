@@ -14,7 +14,7 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 import org.apache.log4j.Logger;
-
+import org.apache.hadoop.mapred.FileOutputCommitter;
 
 public class PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
     public static Logger LOG = Logger.getLogger(PailOutputFormat.class);
@@ -76,6 +76,7 @@ public class PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
                 }
                 numFilesOpened++;
                 LOG.info("Opening " + filename + " for attribute " + attr);
+                //need overwrite for situations where regular FileOutputCommitter isn't used (like S3)
                 oaf = new OpenAttributeFile(attr, filename, _pail.openWrite(filename, true));
                 _outputters.put(attr, oaf);
             }
@@ -115,7 +116,12 @@ public class PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
 
     @Override
     public void checkOutputSpecs(FileSystem fs, JobConf conf) throws IOException {
-
+        // because this outputs multiple files, doesn't work with speculative execution on something like EMR with S3
+        if(!(conf.getOutputCommitter() instanceof FileOutputCommitter)) {
+            if(conf.getMapSpeculativeExecution() && conf.getNumReduceTasks()==0 || conf.getReduceSpeculativeExecution()) {
+                throw new IllegalArgumentException("Cannot use speculative execution with PailOutputFormat unless FileOutputCommitter is enabled");
+            }
+        }
     }
 
 }
