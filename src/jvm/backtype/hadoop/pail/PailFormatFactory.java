@@ -36,8 +36,15 @@ public class PailFormatFactory {
         if(format.equals(SEQUENCE_FILE)) {
             return new SequenceFileFormat(args);
         } else {
-            // TODO: use reflection to find the format (fully qualified class name)
-            throw new IllegalArgumentException("Illegal format " + format);
+            try {
+                return (PailFormat) Class.forName(format).newInstance();
+            } catch(ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch(InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch(IllegalAccessException e) {
+                throw new RuntimeException(e);                
+            }
         }
     }
 }
