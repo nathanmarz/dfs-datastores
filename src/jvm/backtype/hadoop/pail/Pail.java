@@ -263,7 +263,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         }
     }
 
-    public Pail getSubPail(int... attrs) throws IOException {
+    public Pail<T> getSubPail(int... attrs) throws IOException {
         List<String> elems = new ArrayList<String>();
         for(int i: attrs) {
             elems.add("" + i);
@@ -272,7 +272,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         return getSubPail(relPath);        
     }
 
-    public Pail getSubPail(String relpath) throws IOException {
+    public Pail<T> getSubPail(String relpath) throws IOException {
         mkdirs(new Path(getInstanceRoot(), relpath));
         return new Pail(_fs, new Path(getInstanceRoot(), relpath).toString());
     }
