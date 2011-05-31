@@ -23,6 +23,11 @@ public class TimeSliceStore<T> {
             this.weekStart = weekStart;
             this.sliceStart = sliceStart;
         }
+
+        public Slice(long weekStart, long sliceStart) {
+            this.weekStart = (int)weekStart;
+            this.sliceStart = (int)sliceStart;
+        }
     }
 
     public static TimeSliceStore create(String path, TimeSliceStoreSpec spec) throws IOException {
@@ -174,6 +179,10 @@ public class TimeSliceStore<T> {
         return _pail.openWrite("" + weekStart + "/" + sliceStart + "/" + UUID.randomUUID().toString(), false);
     }
 
+    public TypedRecordOutputStream openWrite(long weekStart, long sliceStart) throws IOException {
+        return openWrite((int) weekStart, (int) sliceStart);
+    }
+
     public Iterator<T> openRead(Slice slice) throws IOException {
         return openRead(slice.weekStart, slice.sliceStart);
     }
@@ -228,6 +237,9 @@ public class TimeSliceStore<T> {
         _pail.writeMetadata("" + weekStart + "/" + sliceStart, "slice");
     }
 
+    public void finishSlice(long weekStart, long sliceStart) throws IOException {
+        finishSlice((int) weekStart, (int) sliceStart);
+    }
 
     public void copyAppend(TimeSliceStore other) throws IOException {
         doAppend(other, new AppendFunction() {

@@ -26,16 +26,16 @@ public class Utils {
         return secs / WEEK_TIME_SECS;
     }
 
-    public static int weekStartTime(int week) {
-        return week * WEEK_TIME_SECS;
+    public static long weekStartTime(int week) {
+        return ((long) week) * WEEK_TIME_SECS;
     }
 
     public static int toDay(int secs) {
         return secs / DAY_SECS;
     }
 
-    public static int dayStartTime(int day) {
-        return day * DAY_SECS;
+    public static long dayStartTime(int day) {
+        return ((long) day) * DAY_SECS;
     }
 
     public static byte[] getBytes(BytesWritable bw) {

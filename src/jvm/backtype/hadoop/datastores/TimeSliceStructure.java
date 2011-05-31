@@ -20,8 +20,8 @@ public abstract class TimeSliceStructure<T> implements PailStructure<T> {
 
             int week = Utils.toWeek(weekTimeSecs);
 
-            int weekStart = Utils.weekStartTime(week);
-            int weekEnd = Utils.weekStartTime(week+1);
+            long weekStart = Utils.weekStartTime(week);
+            long weekEnd = Utils.weekStartTime(week+1);
 
             return weekStart == weekTimeSecs && sliceTimeSecs >= weekStart && sliceTimeSecs < weekEnd;
         } catch(NumberFormatException nfe) {
