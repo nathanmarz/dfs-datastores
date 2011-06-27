@@ -4,7 +4,7 @@
   
   :dependencies [
                  [jvyaml "1.0.0"]
-                 [com.google.collections/google-collections "1.0"]
+                 [com.google.guava/guava "r09"]
                  ]
   :dev-dependencies [
                      [org.apache.hadoop/hadoop-core "0.20.2-dev"]
