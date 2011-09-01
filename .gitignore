@@ -6,7 +6,7 @@ pom.xml
 lib/
 *.class
 buid.xml
-
+*.jar
 ## generic files to ignore
 *~
 *.lock
