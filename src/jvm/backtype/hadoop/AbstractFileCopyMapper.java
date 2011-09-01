@@ -32,6 +32,10 @@ public abstract class AbstractFileCopyMapper extends MapReduceBase implements Ma
     public void map(Text source, Text target, OutputCollector<NullWritable, NullWritable> oc, Reporter rprtr) throws IOException {
         Path sourceFile = new Path(source.toString());
         Path finalFile = new Path(target.toString());
+        Path tmpFile = new Path("/tmp/filecopy/" + UUID.randomUUID().toString());
+
+        setStatus(rprtr, "Copying " + sourceFile.toString() + " to " + tmpFile.toString());
+
         if(fsDest.exists(finalFile)) {
             FileChecksum fc1 = fsSource.getFileChecksum(sourceFile);
             FileChecksum fc2 = fsDest.getFileChecksum(finalFile);
@@ -44,10 +48,7 @@ public abstract class AbstractFileCopyMapper extends MapReduceBase implements Ma
             }
         }
 
-        Path tmpFile = new Path("/tmp/filecopy/" + UUID.randomUUID().toString());
         fsDest.mkdirs(tmpFile.getParent());
-
-        setStatus(rprtr, "Copying " + sourceFile.toString() + " to " + tmpFile.toString());
 
         copyFile(fsSource, sourceFile, fsDest, tmpFile, rprtr);
 
