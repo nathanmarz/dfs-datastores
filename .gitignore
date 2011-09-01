@@ -1,0 +1,15 @@
+*.iml
+*.ipr
+*.iws
+.idea/
+pom.xml
+lib/
+*.class
+buid.xml
+
+## generic files to ignore
+*~
+*.lock
+*.DS_Store
+*.swp
+*.out

@@ -20,14 +20,13 @@ import org.apache.log4j.Logger;
 
 public abstract class AbstractFileCopyMapper extends MapReduceBase implements Mapper<Text, Text, NullWritable, NullWritable> {
     public static Logger LOG = Logger.getLogger(AbstractFileCopyMapper.class);
-
+    
     private FileSystem fsSource;
     private FileSystem fsDest;
 
     private void setStatus(Reporter rprtr, String msg) {
         LOG.info(msg);
         rprtr.setStatus(msg);
-
     }
 
     public void map(Text source, Text target, OutputCollector<NullWritable, NullWritable> oc, Reporter rprtr) throws IOException {
@@ -37,8 +36,8 @@ public abstract class AbstractFileCopyMapper extends MapReduceBase implements Ma
             FileChecksum fc1 = fsSource.getFileChecksum(sourceFile);
             FileChecksum fc2 = fsDest.getFileChecksum(finalFile);
             if(fc1!=null && fc2!=null && !fc1.equals(fc2) ||
-                  fsSource.getContentSummary(sourceFile).getLength()!=fsDest.getContentSummary(finalFile).getLength() ||
-                  ((fc1==null || fc2==null) && !Utils.firstNBytesSame(fsSource, sourceFile, fsDest, finalFile, 1024*1024))) {
+               fsSource.getContentSummary(sourceFile).getLength()!=fsDest.getContentSummary(finalFile).getLength() ||
+               ((fc1==null || fc2==null) && !Utils.firstNBytesSame(fsSource, sourceFile, fsDest, finalFile, 1024*1024))) {
                 throw new IOException("Target file already exists and is different! " + finalFile.toString());
             } else {
                 return;

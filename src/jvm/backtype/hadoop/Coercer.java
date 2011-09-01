@@ -48,18 +48,21 @@ public class Coercer {
         conf.setOutputKeyClass(NullWritable.class);
         conf.setOutputValueClass(NullWritable.class);
 
+        RunningJob job = null;
         try {
-            RunningJob job = new JobClient(conf).submitJob(conf);
+            job = new JobClient(conf).submitJob(conf);
             while(!job.isComplete()) {
                 Thread.sleep(100);
             }
             
             if(!job.isSuccessful()) throw new IOException("Coercer failed");
         } catch(IOException e) {
+            if (job!=null) job.killJob();
             IOException ret = new IOException("Coercer failed");
             ret.initCause(e);
             throw ret;
         } catch(InterruptedException e) {
+            job.killJob();
             throw new RuntimeException(e);
         }
     }

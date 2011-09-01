@@ -13,7 +13,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
-
+import org.apache.hadoop.mapreduce.Job;
 
 public class BalancedDistcp {
     public static void distcp(String qualifiedSource, String qualifiedDest, int renameMode, PathLister lister) throws IOException {
@@ -41,23 +41,28 @@ public class BalancedDistcp {
         conf.setOutputKeyClass(NullWritable.class);
         conf.setOutputValueClass(NullWritable.class);
 
+        RunningJob job = null;
+        
         try {
-            RunningJob job = new JobClient(conf).submitJob(conf);
+            job = new JobClient(conf).submitJob(conf);
+
             while(!job.isComplete()) {
                 Thread.sleep(100);
             }
 
             if(!job.isSuccessful()) throw new IOException("BalancedDistcp failed");
         } catch(IOException e) {
+            if (job!=null) job.killJob();
+
             IOException ret = new IOException("BalancedDistcp failed");
             ret.initCause(e);
             throw ret;
         } catch(InterruptedException e) {
+            job.killJob();
             throw new RuntimeException(e);
         }
     }
-
-
+    
     public static class BalancedDistcpMapper extends AbstractFileCopyMapper {
         byte[] buffer = new byte[128*1024]; //128 K
 

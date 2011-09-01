@@ -1,7 +1,6 @@
 (defproject backtype/dfs-datastores "1.0.3"
   :java-source-path "src/jvm"
   :javac-options {:debug "true" :fork "true"}
-  
   :dependencies [
                  [jvyaml "1.0.0"]
                  [com.google.guava/guava "r09"]
