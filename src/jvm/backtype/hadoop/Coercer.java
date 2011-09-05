@@ -20,6 +20,9 @@ public class Coercer {
     private static final String FACTIN_ARG = "coercer_stream_factin_arg";
     private static final String FACTOUT_ARG = "coercer_stream_factout_arg";
 
+    private static Thread shutdownHook;
+    private static RunningJob job = null;
+
     public static void coerce(String source, String dest, int renameMode, PathLister lister, RecordStreamFactory factin, RecordStreamFactory factout) throws IOException {
         coerce(source, dest, renameMode, lister, factin, factout, "");
     }
@@ -48,25 +51,45 @@ public class Coercer {
         conf.setOutputKeyClass(NullWritable.class);
         conf.setOutputValueClass(NullWritable.class);
 
-        RunningJob job = null;
         try {
+            registerShutdownHook();
             job = new JobClient(conf).submitJob(conf);
             while(!job.isComplete()) {
                 Thread.sleep(100);
             }
             
             if(!job.isSuccessful()) throw new IOException("Coercer failed");
+            deregisterShutdownHook();
         } catch(IOException e) {
-            if (job!=null) job.killJob();
             IOException ret = new IOException("Coercer failed");
             ret.initCause(e);
             throw ret;
         } catch(InterruptedException e) {
-            job.killJob();
             throw new RuntimeException(e);
         }
     }
 
+    private static void registerShutdownHook() {
+        shutdownHook = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try {
+                    if(job != null)
+                        job.killJob();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        Runtime.getRuntime().addShutdownHook( shutdownHook );
+    }
+
+    private static void deregisterShutdownHook()
+    {
+        Runtime.getRuntime().removeShutdownHook( shutdownHook );
+    }
 
     public static class CoercerMapper extends AbstractFileCopyMapper {
 

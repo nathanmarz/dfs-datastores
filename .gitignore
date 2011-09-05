@@ -13,3 +13,5 @@ buid.xml
 *.DS_Store
 *.swp
 *.out
+profiles.xml
+build.xml

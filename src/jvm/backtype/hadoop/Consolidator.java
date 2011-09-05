@@ -40,6 +40,9 @@ public class Consolidator {
     public static final long DEFAULT_CONSOLIDATION_SIZE = 1024*1024*127; //127 MB
     private static final String ARGS = "consolidator_args";
 
+    private static Thread shutdownHook;
+    private static RunningJob job = null;
+
     public static class ConsolidatorArgs implements Serializable {
         public RecordStreamFactory streams;
         public PathLister pathLister;
@@ -111,23 +114,45 @@ public class Consolidator {
         conf.setOutputKeyClass(NullWritable.class);
         conf.setOutputValueClass(NullWritable.class);
 
-        RunningJob job = null;
         try {
+            registerShutdownHook();
             job = new JobClient(conf).submitJob(conf);
+
             while(!job.isComplete()) {
                 Thread.sleep(100);
             }
             if(!job.isSuccessful()) throw new IOException("Consolidator failed");
+            deregisterShutdownHook();
         } catch(IOException e) {
-            if (job!=null) job.killJob();
+
             IOException ret = new IOException("Consolidator failed");
             ret.initCause(e);
             throw ret;
         } catch(InterruptedException e) {
-            job.killJob();
             throw new RuntimeException(e);
         }
-            
+    }
+
+    private static void registerShutdownHook() {
+        shutdownHook = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try {
+                    if(job != null)
+                        job.killJob();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        Runtime.getRuntime().addShutdownHook( shutdownHook );
+    }
+
+    private static void deregisterShutdownHook()
+    {
+        Runtime.getRuntime().removeShutdownHook( shutdownHook );
     }
 
     public static class ConsolidatorMapper extends MapReduceBase implements Mapper<ArrayWritable, Text, NullWritable, NullWritable> {
