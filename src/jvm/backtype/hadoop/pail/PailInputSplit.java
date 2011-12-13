@@ -1,17 +1,17 @@
 package backtype.hadoop.pail;
 
 import backtype.support.Utils;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class PailInputSplit extends FileSplit {
 

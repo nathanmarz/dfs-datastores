@@ -1,6 +1,5 @@
 package backtype.hadoop.datastores;
 
-
 public class DefaultTimeSliceStructure extends TimeSliceStructure<byte[]> {
     public byte[] deserialize(byte[] serialized) {
         return serialized;

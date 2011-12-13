@@ -5,12 +5,7 @@
 
 package backtype.support;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import java.util.*;
 
 public class KeywordArgParser {
     private Map<String, Object> _expected = new HashMap<String, Object>();

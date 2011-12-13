@@ -4,15 +4,10 @@ import backtype.hadoop.pail.CopyArgs;
 import backtype.hadoop.pail.Pail;
 import backtype.hadoop.pail.Pail.TypedRecordOutputStream;
 import backtype.support.Utils;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import org.apache.hadoop.fs.FileSystem;
+
+import java.io.IOException;
+import java.util.*;
 
 public class TimeSliceStore<T> {
     public static class Slice {

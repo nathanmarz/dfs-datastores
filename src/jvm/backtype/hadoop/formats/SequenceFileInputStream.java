@@ -1,12 +1,13 @@
 package backtype.hadoop.formats;
 
 import backtype.support.Utils;
-import java.io.IOException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.SequenceFile;
+
+import java.io.IOException;
 
 public class SequenceFileInputStream implements RecordInputStream {
 

@@ -2,19 +2,16 @@ package backtype.hadoop.pail;
 
 import backtype.hadoop.formats.RecordOutputStream;
 import backtype.support.Utils;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.FileOutputFormat;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordWriter;
-import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.Progressable;
 import org.apache.log4j.Logger;
-import org.apache.hadoop.mapred.FileOutputCommitter;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
     public static Logger LOG = Logger.getLogger(PailOutputFormat.class);

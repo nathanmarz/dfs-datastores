@@ -5,13 +5,14 @@ import backtype.hadoop.formats.RecordOutputStream;
 import backtype.hadoop.pail.Pail;
 import backtype.hadoop.pail.Pail.TypedRecordOutputStream;
 import com.google.common.collect.TreeMultiset;
+import junit.framework.Assert;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import junit.framework.Assert;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
 public class TestUtils {
 

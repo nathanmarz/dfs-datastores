@@ -1,6 +1,5 @@
 package backtype.hadoop.pail;
 
-
 public abstract class BinaryPailStructure implements PailStructure<byte[]> {
     public byte[] deserialize(byte[] serialized) {
         return serialized;

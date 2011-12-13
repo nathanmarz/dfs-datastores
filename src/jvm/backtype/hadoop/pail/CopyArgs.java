@@ -1,6 +1,5 @@
 package backtype.hadoop.pail;
 
-
 public class CopyArgs {
     public Integer renameMode = null;
     public boolean copyMetadata = true;

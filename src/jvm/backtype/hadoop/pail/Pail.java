@@ -1,30 +1,20 @@
 package backtype.hadoop.pail;
 
-import backtype.hadoop.BalancedDistcp;
-import backtype.hadoop.Coercer;
-import backtype.hadoop.Consolidator;
-import backtype.hadoop.PathLister;
-import backtype.hadoop.RenameMode;
+import backtype.hadoop.*;
 import backtype.hadoop.formats.RecordInputStream;
 import backtype.hadoop.formats.RecordOutputStream;
 import backtype.support.Utils;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 public class Pail<T> extends AbstractPail implements Iterable<T>{
     public static Logger LOG = Logger.getLogger(Pail.class);
-
 
     public static final String META = "pail.meta";
 
@@ -38,7 +28,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             _overwrite = overwrite;
         }
 
-        public void writeObject(T obj) throws IOException {
+        public <T> void writeObject(T obj) throws IOException {
             List<String> rootAttrs = _structure.getTarget(obj);
             List<String> attrs = makeRelative(rootAttrs);
             String targetDir = Utils.join(attrs, "/");

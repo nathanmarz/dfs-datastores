@@ -4,7 +4,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.OutputStream;
 
-
 public class DataOutputWrapperStream extends OutputStream {
     DataOutput output;
 

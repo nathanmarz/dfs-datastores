@@ -3,11 +3,12 @@ package backtype.hadoop.pail;
 import backtype.hadoop.formats.RecordInputStream;
 import backtype.hadoop.formats.RecordOutputStream;
 import backtype.support.Utils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.Path;
 
 
 public abstract class AbstractPail {
