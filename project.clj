@@ -1,4 +1,6 @@
-(defproject backtype/dfs-datastores "1.0.5"
+(defproject backtype/dfs-datastores "1.1.0-SNAPSHOT"
+  :source-path "src/clj"
+  :test-path "test/clj"
   :java-source-path "src/jvm"
   :java-test-path "test/jvm"
   :javac-options {:debug "true" :fork "true"}
