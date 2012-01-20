@@ -35,8 +35,8 @@ public class Consolidator {
         public String extension;
 
 
-        public ConsolidatorArgs(RecordStreamFactory streams, PathLister pathLister, List<String> dirs,
-                long targetSizeBytes, String extension) {
+        public ConsolidatorArgs(RecordStreamFactory streams, PathLister pathLister,
+                                List<String> dirs, long targetSizeBytes, String extension) {
             this.streams = streams;
             this.pathLister = pathLister;
             this.dirs = dirs;
@@ -81,7 +81,6 @@ public class Consolidator {
     public static void consolidate(FileSystem fs, RecordStreamFactory streams, PathLister lister, List<String> dirs,
             long targetSizeBytes, String extension) throws IOException {
         JobConf conf = new JobConf(Consolidator.class);
-        conf.set("fs.default.name", fs.getUri().toString());
         ConsolidatorArgs args = new ConsolidatorArgs(streams, lister, dirs, targetSizeBytes, extension);
         Utils.setObject(conf, ARGS, args);
 
@@ -142,11 +141,13 @@ public class Consolidator {
     public static class ConsolidatorMapper extends MapReduceBase implements Mapper<ArrayWritable, Text, NullWritable, NullWritable> {
         public static Logger LOG = Logger.getLogger(ConsolidatorMapper.class);
 
-        FileSystem fs;
         ConsolidatorArgs args;
 
         public void map(ArrayWritable sourcesArr, Text target, OutputCollector<NullWritable, NullWritable> oc, Reporter rprtr) throws IOException {
+            
             Path finalFile = new Path(target.toString());
+            
+            FileSystem fs = Utils.getFS(target.toString());
 
             List<Path> sources = new ArrayList<Path>();
             for(int i=0; i<sourcesArr.get().length; i++) {
@@ -199,12 +200,7 @@ public class Consolidator {
 
         @Override
         public void configure(JobConf job) {
-            try {
-                fs = FileSystem.get(job);
-                args = (ConsolidatorArgs) Utils.getObject(job, ARGS);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            args = (ConsolidatorArgs) Utils.getObject(job, ARGS);
         }   
     }
 
@@ -346,12 +342,12 @@ public class Consolidator {
         }
 
         public InputSplit[] getSplits(JobConf conf, int ignored) throws IOException {
-            FileSystem fs = FileSystem.get(conf);
             ConsolidatorArgs args = (ConsolidatorArgs) Utils.getObject(conf, ARGS);
             PathLister lister = args.pathLister;
             List<String> dirs = args.dirs;
             List<InputSplit> ret = new ArrayList<InputSplit>();
             for(String dir: dirs) {
+                FileSystem fs = Utils.getFS(dir);
                 ret.addAll(createSplits(fs, lister.getFiles(fs,dir),
                         dir, args.targetSizeBytes, args.extension));
             }
