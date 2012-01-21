@@ -29,7 +29,8 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         }
 
         public <T> void writeObject(T obj) throws IOException {
-            List<String> rootAttrs = _structure.getTarget(obj);
+            PailStructure<T> structure = ((PailStructure<T>) _structure);
+            List<String> rootAttrs = structure.getTarget(obj);
             List<String> attrs = makeRelative(rootAttrs);
             String targetDir = Utils.join(attrs, "/");
             if(!_workers.containsKey(targetDir)) {
@@ -44,7 +45,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
                 _workers.put(targetDir, Pail.super.openWrite(p.toString(), _overwrite));
             }
             RecordOutputStream os = _workers.get(targetDir);
-            os.writeRaw(_structure.serialize(obj));
+            os.writeRaw(structure.serialize(obj));
         }
 
         public void writeObjects(T... objs) throws IOException {
