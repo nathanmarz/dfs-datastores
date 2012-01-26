@@ -37,7 +37,7 @@ public class Consolidator {
 
 
         public ConsolidatorArgs(String fsUri, RecordStreamFactory streams, PathLister pathLister,
-                                List<String> dirs, long targetSizeBytes, String extension) {
+            List<String> dirs, long targetSizeBytes, String extension) {
             this.fsUri = fsUri;
             this.streams = streams;
             this.pathLister = pathLister;
@@ -48,22 +48,22 @@ public class Consolidator {
     }
 
     public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
-            PathLister pathLister, long targetSizeBytes) throws IOException {
+        PathLister pathLister, long targetSizeBytes) throws IOException {
         consolidate(fs, targetDir, streams, pathLister, targetSizeBytes, "");
     }
 
     public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
-            PathLister pathLister, String extension) throws IOException {
+        PathLister pathLister, String extension) throws IOException {
         consolidate(fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, extension);
     }
 
     public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
-            PathLister pathLister) throws IOException {
+        PathLister pathLister) throws IOException {
         consolidate(fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, "");
     }
 
     public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
-            PathLister pathLister, long targetSizeBytes, String extension) throws IOException {
+        PathLister pathLister, long targetSizeBytes, String extension) throws IOException {
         List<String> dirs = new ArrayList<String>();
         dirs.add(targetDir);
         consolidate(fs, streams, pathLister, dirs, targetSizeBytes, extension);
@@ -81,14 +81,14 @@ public class Consolidator {
     }
 
     public static void consolidate(FileSystem fs, RecordStreamFactory streams, PathLister lister, List<String> dirs,
-            long targetSizeBytes, String extension) throws IOException {
+        long targetSizeBytes, String extension) throws IOException {
         JobConf conf = new JobConf(Consolidator.class);
         String fsUri = fs.getUri().toString();
         ConsolidatorArgs args = new ConsolidatorArgs(fsUri, streams, lister, dirs, targetSizeBytes, extension);
         Utils.setObject(conf, ARGS, args);
 
         conf.setJobName("Consolidator: " + getDirsString(dirs));
-        
+
         conf.setInputFormat(ConsolidatorInputFormat.class);
         conf.setOutputFormat(NullOutputFormat.class);
         conf.setMapperClass(ConsolidatorMapper.class);
@@ -148,9 +148,9 @@ public class Consolidator {
         ConsolidatorArgs args;
 
         public void map(ArrayWritable sourcesArr, Text target, OutputCollector<NullWritable, NullWritable> oc, Reporter rprtr) throws IOException {
-            
+
             Path finalFile = new Path(target.toString());
-            
+
             List<Path> sources = new ArrayList<Path>();
             for(int i=0; i<sourcesArr.get().length; i++) {
                 sources.add(new Path(((Text)sourcesArr.get()[i]).toString()));
@@ -197,7 +197,7 @@ public class Consolidator {
                 fs.delete(p, false);
                 rprtr.progress();
             }
-            
+
         }
 
         @Override
@@ -208,7 +208,7 @@ public class Consolidator {
             } catch(IOException e) {
                 throw new RuntimeException(e);
             }
-        }   
+        }
     }
 
     public static class ConsolidatorSplit implements InputSplit {
@@ -216,7 +216,7 @@ public class Consolidator {
         public String target;
 
         public ConsolidatorSplit() {
-            
+
         }
 
         public ConsolidatorSplit(String[] sources, String target) {
@@ -242,7 +242,7 @@ public class Consolidator {
             target = WritableUtils.readString(di);
             sources = WritableUtils.readStringArray(di);
         }
-        
+
     }
 
     public static class ConsolidatorRecordReader implements RecordReader<ArrayWritable, Text> {
@@ -286,7 +286,7 @@ public class Consolidator {
             if(finished) return 1;
             else return 0;
         }
-        
+
     }
 
 
@@ -326,7 +326,7 @@ public class Consolidator {
         }
 
         private List<InputSplit> createSplits(FileSystem fs, List<Path> files,
-                String target, long targetSize, String extension) throws IOException {
+            String target, long targetSize, String extension) throws IOException {
             List<PathSizePair> working = getFileSizePairs(fs, files);
             List<InputSplit> ret = new ArrayList<InputSplit>();
             List<List<PathSizePair>> splits = SubsetSum.split(working, targetSize);
@@ -334,8 +334,8 @@ public class Consolidator {
                 if(c.size()>1) {
                     String rand = UUID.randomUUID().toString();
                     String targetFile = new Path(target,
-                            "" + rand.charAt(0) + rand.charAt(1) + "/cons" +
-                            rand + extension).toString();
+                        "" + rand.charAt(0) + rand.charAt(1) + "/cons" +
+                        rand + extension).toString();
                     ret.add(new ConsolidatorSplit(pathsToStrs(c), targetFile));
 
                 }
@@ -345,7 +345,7 @@ public class Consolidator {
                     return ((ConsolidatorSplit)o2).sources.length - ((ConsolidatorSplit)o1).sources.length;
                 }
             });
-            return ret;            
+            return ret;
         }
 
         public InputSplit[] getSplits(JobConf conf, int ignored) throws IOException {
@@ -356,13 +356,13 @@ public class Consolidator {
             for(String dir: dirs) {
                 FileSystem fs = Utils.getFS(dir);
                 ret.addAll(createSplits(fs, lister.getFiles(fs,dir),
-                        dir, args.targetSizeBytes, args.extension));
+                    dir, args.targetSizeBytes, args.extension));
             }
             return ret.toArray(new InputSplit[ret.size()]);
         }
 
         public RecordReader<ArrayWritable, Text> getRecordReader(InputSplit is, JobConf jc, Reporter rprtr) throws IOException {
             return new ConsolidatorRecordReader((ConsolidatorSplit) is);
-        }        
+        }
     }
 }
