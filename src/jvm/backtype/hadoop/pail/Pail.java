@@ -216,7 +216,8 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         super(path);
         _fs = fs;
         _root = getRoot(fs, new Path(path));
-        if(_root==null || !fs.exists(new Path(path))) throw new IllegalArgumentException("Pail does not exist at path " + path);
+        if(_root==null || !fs.exists(new Path(path)))
+            throw new IllegalArgumentException("Pail does not exist at path " + path);
         _spec = getSpec(fs, new Path(path));
         _structure = _spec.getStructure();
         _format = PailFormatFactory.create(_spec);

@@ -3,6 +3,7 @@ package backtype.hadoop.pail;
 import backtype.hadoop.formats.RecordOutputStream;
 import backtype.support.Utils;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
+public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
     public static Logger LOG = Logger.getLogger(PailOutputFormat.class);
     public static final String SPEC_ARG = "pail_spec_arg";
 
@@ -22,7 +23,7 @@ public class PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
 
 
     /**
-     * Change this to just use Pail#writeObject - auatomically fix up BytesWritable
+     * Change this to just use Pail#writeObject - automatically fix up BytesWritable
      */
     public static class PailRecordWriter implements RecordWriter<Text, BytesWritable> {
         private Pail _pail;
@@ -41,18 +42,20 @@ public class PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
             }
         }
 
-
         private Map<String, OpenAttributeFile> _outputters = new HashMap<String, OpenAttributeFile>();
         private int writtenRecords = 0;
         private int numFilesOpened = 0;
 
-
         public PailRecordWriter(JobConf conf, String unique, Progressable p) throws IOException {
             PailSpec spec = (PailSpec) Utils.getObject(conf, SPEC_ARG);
-            Pail.create(getOutputPath(conf).toString(), spec,  false);
+
+            Path path = getOutputPath(conf);
+            FileSystem fs = path.getFileSystem(conf);
+
+            Pail.create(fs, path.toString(), spec,  false);
             // this is a hack to get the work output directory since it's not exposed directly. instead it only 
             // provides a path to a particular file.
-            _pail = Pail.create(FileOutputFormat.getTaskOutputPath(conf, unique).getParent().toString(), spec, false);
+            _pail = Pail.create(fs, FileOutputFormat.getTaskOutputPath(conf, unique).getParent().toString(), spec, false);
             _unique = unique;
         }
 
