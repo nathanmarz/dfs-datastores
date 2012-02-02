@@ -28,8 +28,8 @@ public class FileCopyInputFormat implements InputFormat<Text, Text> {
         public String source;
         public String dest;
         public PathLister lister;
-        int renameMode;
-        public String renamableExtension;
+        public int renameMode = RenameMode.ALWAYS_RENAME;
+        public String renamableExtension = "";
         public boolean allToRoot = false;
 
         public FileCopyArgs(String source, String dest, int renameMode, PathLister lister, String renamableExtension) {
@@ -39,6 +39,12 @@ public class FileCopyInputFormat implements InputFormat<Text, Text> {
             this.renamableExtension = renamableExtension;
             this.renameMode = renameMode;
             if(this.renamableExtension==null) this.renamableExtension = "";
+        }
+        
+        public FileCopyArgs(String source, String dest, PathLister lister) {
+            this.source = source;
+            this.dest = dest;
+            this.lister = lister;
         }
     }
 

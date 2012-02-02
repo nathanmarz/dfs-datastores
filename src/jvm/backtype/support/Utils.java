@@ -200,4 +200,24 @@ public class Utils {
         }
         return str.substring(0, str.length()-extension.length());
     }
+    
+    public static byte[] readFully(InputStream is) throws IOException {
+        List<Byte> ret = new ArrayList<Byte>();
+        byte[] buffer = new byte[1024];
+        while(true) {
+            int numRead = is.read(buffer);
+            if(numRead==-1) {
+                break;
+            } else {
+                for(int i=0; i<numRead; i++) {
+                    ret.add(buffer[i]);
+                }
+            }
+        }
+        byte[] arr = new byte[ret.size()];
+        for(int i=0; i<ret.size(); i++) {
+            arr[i] = ret.get(i);
+        }
+        return arr;
+    }
 }
