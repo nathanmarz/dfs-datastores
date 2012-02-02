@@ -1,0 +1,105 @@
+<project name="dfs_datastores" default="jar">
+  <property name="src.dir"  location="${basedir}/src/jvm"/>
+  <property name="final.name" value="dfs_datastores"/>
+  <property name="javac.deprecation" value="true"/>
+  
+  <property name="build.dir" location="${basedir}/build"/>
+  <property name="build.classes" location="${build.dir}/classes"/>
+  <property name="build.test" location="${build.dir}/test"/>
+  <property name="build.encoding" value="ISO-8859-1"/>
+
+  <property name="test.junit.output.format" value="plain"/>
+  <property name="test.timeout" value="600000"/>
+
+  <property name="src.test" location="test/jvm"/>
+      
+  <property environment="env" />
+
+  <fileset id="deps.jars" dir="${basedir}" includes="lib/**/*.jar"/>
+  <path id="classpath.id">
+    <pathelement location="${basedir}/build"/>
+    <fileset refid="deps.jars"/>
+  </path>
+
+  <path id="test.build.classpath.id">
+    <path refid="classpath.id"/>
+    <pathelement location="build/${final.name}.jar"/>
+  </path>
+
+  <path id="test.run.classpath.id">
+    <path refid="test.build.classpath.id"/>
+    <pathelement location="${build.test}"/>
+  </path>
+
+  <target name="classpath">
+    <property name="cp" refid="classpath.id"/>
+    <echo message="Classpath: ${cp}"/>
+  </target>
+  
+  <target name="init">
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${build.classes}"/>
+  </target>
+  
+  <target name="init-test">
+    <mkdir dir="${build.dir}/test"/>
+    <mkdir dir="${build.dir}/test/data"/>    
+    <mkdir dir="${build.dir}/test/data/sandbox"/>    
+    <mkdir dir="${build.test}"/>
+  </target>
+  
+  <target name="compile" depends="init">
+   <javac
+    encoding="${build.encoding}"
+    srcdir="${src.dir};"
+    includes="**/*.java"
+    destdir="${build.classes}"
+    debug="true"
+    deprecation="${javac.deprecation}">
+     <classpath refid="classpath.id"/>
+   </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="Build jar">
+    <jar jarfile="${build.dir}/${final.name}.jar" basedir="${build.classes}/" />
+  </target>
+
+  <target name="clean" description="Destroy all build artifacts">
+    <delete dir="${build.dir}"/>
+  </target>
+
+  <target name="test" description="Runs all tests" depends="jar,init-test,compile-test">
+    <delete dir="build/test/log"/>
+    <mkdir dir="build/test/log"/>
+    <junit
+      printsummary="yes" showoutput="${test.output}" 
+      haltonfailure="no" fork="yes" maxmemory="512m"
+      errorProperty="tests.failed" failureProperty="tests.failed"
+      timeout="${test.timeout}">
+      
+      <sysproperty key="build.test" value="${build.test}"/>
+      <classpath refid="test.run.classpath.id"/>
+      <formatter type="${test.junit.output.format}" />
+      <batchtest todir="build/test/log" unless="testcase">
+        <fileset dir="${src.test}" includes="**/*Test.java" />
+      </batchtest>
+      <batchtest todir="build/test/log" if="testcase">
+        <fileset dir="${src.test}" includes="**/${testcase}.java"/>
+      </batchtest>
+    </junit>
+    <fail if="tests.failed">Tests failed!</fail>
+  </target>  
+
+  <target name="compile-test" depends="init-test,jar">
+    <javac
+      encoding="${build.encoding}"
+      srcdir="test/jvm;"
+      includes="**/*.java"
+      destdir="${build.test}"
+      debug="true"
+      deprecation="${javac.deprecation}">
+        <classpath refid="test.build.classpath.id"/>
+    </javac>
+  </target>
+
+</project>
