@@ -5,3 +5,9 @@ to include dfs-datastores in your project, add the following to project.clj:
 ```clojure
 [backtype/dfs-datastores "1.1.2"]
 ```
+
+To run the tests:
+
+```
+ant test
+```
