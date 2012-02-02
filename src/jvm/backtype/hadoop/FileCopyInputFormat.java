@@ -30,6 +30,7 @@ public class FileCopyInputFormat implements InputFormat<Text, Text> {
         public PathLister lister;
         int renameMode;
         public String renamableExtension;
+        public boolean allToRoot = false;
 
         public FileCopyArgs(String source, String dest, int renameMode, PathLister lister, String renamableExtension) {
             this.source = source;
@@ -153,6 +154,9 @@ public class FileCopyInputFormat implements InputFormat<Text, Text> {
 
     public InputSplit[] getSplits(JobConf conf, int mappers) throws IOException {
         FileCopyArgs args = (FileCopyArgs) Utils.getObject(conf, ARGS);
+        if(args.allToRoot && args.renameMode != RenameMode.ALWAYS_RENAME) {
+            throw new IllegalArgumentException("Must rename paths if sending all to root");
+        }
         FileSystem fsSource = new Path(args.source).getFileSystem(new Configuration());
         FileSystem fsDest = new Path(args.dest).getFileSystem(new Configuration());
         long workPerWorker = conf.getLong(WORK_PER_WORKER, DEFAULT_WORK_PER_WORKER);
@@ -160,12 +164,16 @@ public class FileCopyInputFormat implements InputFormat<Text, Text> {
         List<Path> fullPaths = args.lister.getFiles(fsSource, args.source);
         for(Path p: fullPaths) {
             long size = fsSource.getContentSummary(p).getLength();
-            String rel = Utils.makeRelative(new Path(args.source), p);
-            Path destp = new Path(args.dest, rel);
+            Path destp;
+            if(args.allToRoot) {
+                destp = new Path(args.dest, p.getName());
+            } else {
+                destp = new Path(args.dest, Utils.makeRelative(new Path(args.source), p));
+            }
             String dest;
             boolean targetExists = fsDest.exists(destp);
             if(targetExists || args.renameMode==RenameMode.ALWAYS_RENAME) {
-                if(args.renameMode != RenameMode.NO_RENAME && rel.endsWith(args.renamableExtension)) {
+                if(args.renameMode != RenameMode.NO_RENAME && p.getName().endsWith(args.renamableExtension)) {
                     dest = new Path(destp.getParent(), "fc_" + UUID.randomUUID().toString() + args.renamableExtension).toString();
                 } else {
                     if(!targetExists) {

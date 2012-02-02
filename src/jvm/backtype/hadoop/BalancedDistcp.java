@@ -24,14 +24,18 @@ public class BalancedDistcp {
     }
 
     public static void distcp(String qualSource, String qualDest, int renameMode, PathLister lister, String extensionOnRename) throws IOException {
-        if(!Utils.hasScheme(qualSource) || !Utils.hasScheme(qualDest))
-            throw new IllegalArgumentException("source and dest must have schemes " + qualSource + " " + qualDest);
-
         FileCopyArgs args = new FileCopyArgs(qualSource, qualDest, renameMode, lister, extensionOnRename);
+        distcp(args);
+    }
+    
+    public static void distcp(FileCopyArgs args) throws IOException {
+        if(!Utils.hasScheme(args.source) || !Utils.hasScheme(args.dest))
+            throw new IllegalArgumentException("source and dest must have schemes " + args.source + " " + args.dest);
+
         JobConf conf = new JobConf(BalancedDistcp.class);
         Utils.setObject(conf, FileCopyInputFormat.ARGS, args);
 
-        conf.setJobName("BalancedDistcp: " + qualSource + " -> " + qualDest);
+        conf.setJobName("BalancedDistcp: " + args.source + " -> " + args.dest);
 
         conf.setInputFormat(FileCopyInputFormat.class);
         conf.setOutputFormat(NullOutputFormat.class);
@@ -60,7 +64,7 @@ public class BalancedDistcp {
             throw ret;
         } catch(InterruptedException e) {
             throw new RuntimeException(e);
-        }
+        }        
     }
 
     public static class BalancedDistcpMapper extends AbstractFileCopyMapper {
