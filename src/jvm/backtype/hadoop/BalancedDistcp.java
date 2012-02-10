@@ -74,6 +74,7 @@ public class BalancedDistcp {
         protected void copyFile(FileSystem fsSource, Path source, FileSystem fsDest, Path target, Reporter reporter) throws IOException {
             FSDataInputStream fin = fsSource.open(source);
             FSDataOutputStream fout = fsDest.create(target);
+
             try {
                 int amt;
                 while((amt = fin.read(buffer)) >= 0) {

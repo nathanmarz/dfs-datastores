@@ -30,6 +30,7 @@ public class FileCopyInputFormat implements InputFormat<Text, Text> {
         public PathLister lister;
         public int renameMode = RenameMode.ALWAYS_RENAME;
         public String renamableExtension = "";
+        public String tmpRoot = "/tmp/filecopy";
         public boolean allToRoot = false;
 
         public FileCopyArgs(String source, String dest, int renameMode, PathLister lister, String renamableExtension) {
@@ -160,11 +161,10 @@ public class FileCopyInputFormat implements InputFormat<Text, Text> {
 
     public InputSplit[] getSplits(JobConf conf, int mappers) throws IOException {
         FileCopyArgs args = (FileCopyArgs) Utils.getObject(conf, ARGS);
-        if(args.allToRoot && args.renameMode != RenameMode.ALWAYS_RENAME) {
-            throw new IllegalArgumentException("Must rename paths if sending all to root");
-        }
+
         FileSystem fsSource = new Path(args.source).getFileSystem(new Configuration());
         FileSystem fsDest = new Path(args.dest).getFileSystem(new Configuration());
+
         long workPerWorker = conf.getLong(WORK_PER_WORKER, DEFAULT_WORK_PER_WORKER);
         List<FileCopyAndSize> all = new ArrayList<FileCopyAndSize>();
         List<Path> fullPaths = args.lister.getFiles(fsSource, args.source);
@@ -205,7 +205,7 @@ public class FileCopyInputFormat implements InputFormat<Text, Text> {
             splits = SubsetSum.split(all, workPerWorker);
         }
         InputSplit[] ret = new InputSplit[splits.size()];
-        for(int i=0; i<splits.size(); i++) {
+        for(int i = 0; i < splits.size(); i++) {
             ret[i] = new FileCopySplit(getFileCopies(splits.get(i)));
         }
 
