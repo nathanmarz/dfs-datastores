@@ -2,6 +2,10 @@
 #
 # http://about.travis-ci.org/docs/user/build-configuration/
 
+# See this guide for more settings:
+#
+# http://about.travis-ci.org/docs/user/build-configuration/
+
 language: clojure
 script: lein javac, junit
 branches:
