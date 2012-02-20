@@ -201,10 +201,10 @@ public class Consolidator {
         }
 
         @Override
-        public void configure(JobConf job) {
-            args = (ConsolidatorArgs) Utils.getObject(job, ARGS);
+        public void configure(JobConf conf) {
+            args = (ConsolidatorArgs) Utils.getObject(conf, ARGS);
             try {
-                fs = Utils.getFS(args.fsUri);
+                fs = Utils.getFS(args.fsUri, conf);
             } catch(IOException e) {
                 throw new RuntimeException(e);
             }
@@ -354,7 +354,7 @@ public class Consolidator {
             List<String> dirs = args.dirs;
             List<InputSplit> ret = new ArrayList<InputSplit>();
             for(String dir: dirs) {
-                FileSystem fs = Utils.getFS(dir);
+                FileSystem fs = Utils.getFS(dir, conf);
                 ret.addAll(createSplits(fs, lister.getFiles(fs,dir),
                     dir, args.targetSizeBytes, args.extension));
             }

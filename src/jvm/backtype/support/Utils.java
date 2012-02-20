@@ -191,7 +191,11 @@ public class Utils {
     }
 
     public static FileSystem getFS(String path) throws IOException {
-        return new Path(path).getFileSystem(new Configuration());
+        return getFS(path, new Configuration());
+    }
+
+    public static FileSystem getFS(String path, Configuration conf) throws IOException {
+        return new Path(path).getFileSystem(conf);
     }
 
     public static String stripExtension(String str, String extension) {

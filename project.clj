@@ -4,8 +4,14 @@
   :java-source-path "src/jvm"
   :java-test-path "test/jvm"
   :javac-options {:debug "true" :fork "true"}
+  :javac-source-path [["src"] ["test"]]
+  :junit [["classes"]]
+  :junit-options {:fork "off" :haltonfailure "on"}
   :dependencies [[jvyaml "1.0.0"]
                  [com.google.guava/guava "r09"]]
   :dev-dependencies [[org.apache.hadoop/hadoop-core "0.20.2-dev"]
                      [midje "1.3.0"]
-                     [junit/junit "3.8.2"]])
+                     [lein-midje "1.0.8"]
+                     [lein-javac "1.3.0"]
+                     [lein-junit "1.0.0"]
+                     [junit "4.7"]])
