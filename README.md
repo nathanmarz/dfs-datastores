@@ -8,6 +8,6 @@ to include dfs-datastores in your project, add the following to project.clj:
 
 To run the tests:
 
-```
-ant test
+```clojure
+lein deps, javac, junit
 ```
