@@ -82,7 +82,7 @@ public class Consolidator {
 
     public static void consolidate(FileSystem fs, RecordStreamFactory streams, PathLister lister, List<String> dirs,
         long targetSizeBytes, String extension) throws IOException {
-        JobConf conf = new JobConf(Consolidator.class);
+        JobConf conf = new JobConf(fs.getConf(), Consolidator.class);
         String fsUri = fs.getUri().toString();
         ConsolidatorArgs args = new ConsolidatorArgs(fsUri, streams, lister, dirs, targetSizeBytes, extension);
         Utils.setObject(conf, ARGS, args);
