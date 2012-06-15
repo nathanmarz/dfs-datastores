@@ -1,4 +1,4 @@
-(defproject backtype/dfs-datastores "1.1.3"
+(defproject backtype/dfs-datastores "1.1.4-SNAPSHOT"
   :source-path "src/clj"
   :test-path "test/clj"
   :java-source-path "src/jvm"
