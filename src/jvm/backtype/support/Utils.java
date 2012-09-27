@@ -34,6 +34,20 @@ public class Utils {
         return ((long) day) * DAY_SECS;
     }
 
+    /**
+     * Return true or false if the input is a long
+     * @param input
+     * @return boolean
+     */
+    public static boolean isLong(String input) {
+        try {
+            Long.parseLong(input);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static byte[] getBytes(BytesWritable bw) {
         byte[] padded = bw.getBytes();
         byte[] ret = new byte[bw.getLength()];
