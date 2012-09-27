@@ -7,7 +7,8 @@
 # http://about.travis-ci.org/docs/user/build-configuration/
 
 language: clojure
-script: lein javac, junit
+lein: lein2
+script: lein2 test
 branches:
   only:
     - develop
