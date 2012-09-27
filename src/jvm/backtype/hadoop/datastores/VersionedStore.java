@@ -227,8 +227,8 @@ public class VersionedStore {
                 ret.add(new Path(f.getAbsolutePath()));
             }
         } else {
-            for(FileStatus fs: fs.listStatus(new Path(dir))) {
-                ret.add(fs.getPath());
+            for(FileStatus status: fs.listStatus(new Path(dir))) {
+                ret.add(status.getPath());
             }
         }
         return ret;
