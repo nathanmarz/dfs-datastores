@@ -7,11 +7,11 @@ A dramatically simpler and more powerful way to store records on a distributed f
 to include dfs-datastores in your project, add the following to project.clj:
 
 ```clojure
-[backtype/dfs-datastores "1.1.2"]
+[backtype/dfs-datastores "1.2.0"]
 ```
 
 To run the tests:
 
 ```clojure
-lein deps, javac, junit
+lein junit
 ```
