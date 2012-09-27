@@ -1,73 +1,89 @@
 package backtype.hadoop.datastores;
 
 import backtype.support.Utils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.AccessControlException;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
-import org.apache.hadoop.fs.Path;
-import java.io.File;
 
 public class VersionedStore {
     private static final String FINISHED_VERSION_SUFFIX = ".version";
+    public static final String HADOOP_SUCCESS_FLAG = "_SUCCESS";
 
-    private String _root;
-    private FileSystem _fs;
+    private String root;
+    private FileSystem fs;
 
     public VersionedStore(String path) throws IOException {
       this(Utils.getFS(path), path);
     }
     
     public VersionedStore(FileSystem fs, String path) throws IOException {
-      _fs = fs;
-      _root = path;
-      mkdirs(_root);
+      this.fs = fs;
+      root = path;
+      mkdirs(root);
     }
 
     public FileSystem getFileSystem() {
-        return _fs;
+        return fs;
     }
 
     public String getRoot() {
-        return _root;
+        return root;
     }
 
     public String versionPath(long version) {
-        return new Path(_root, "" + version).toString();
+        return new Path(getRoot(), "" + version).toString();
     }
 
     public String mostRecentVersionPath() throws IOException {
         Long v = mostRecentVersion();
-        if(v==null) return null;
-        return versionPath(v);
+        return (v == null) ? null : versionPath(v);
     }
 
     public String mostRecentVersionPath(long maxVersion) throws IOException {
         Long v = mostRecentVersion(maxVersion);
-        if(v==null) return null;
-        return versionPath(v);
+        return (v == null) ? null : versionPath(v);
     }
 
     public Long mostRecentVersion() throws IOException {
-        List<Long> all = getAllVersions();
-        if(all.size()==0) return null;
-        return all.get(0);
+        return mostRecentVersion(false, null);
+    }
+
+    public Long mostRecentVersion(boolean skipVersionSuffix) throws IOException {
+        return mostRecentVersion(skipVersionSuffix, null);
     }
 
     public Long mostRecentVersion(long maxVersion) throws IOException {
-        List<Long> all = getAllVersions();
-        for(Long v: all) {
-            if(v <= maxVersion) return v;
+        return mostRecentVersion(false, maxVersion);
+    }
+
+    public Long mostRecentVersion(boolean skipVersionSuffix, Long maxVersion) throws IOException {
+        List<Long> all = getAllVersions(skipVersionSuffix);
+        if (maxVersion == null) {
+            return (all.size() == 0) ? null : all.get(0);
+        } else {
+            for(Long v: all) {
+                if(v <= maxVersion)
+                    return v;
+            }
+            return null;
         }
-        return null;
+    }
+
+    public long newVersion() {
+        return System.currentTimeMillis();
     }
 
     public String createVersion() throws IOException {
-        return createVersion(System.currentTimeMillis());
+        return createVersion(newVersion());
     }
 
     public String createVersion(long version) throws IOException {
@@ -76,7 +92,7 @@ public class VersionedStore {
             throw new RuntimeException("Version already exists or data already exists");
         else {
             //in case there's an incomplete version there, delete it
-            _fs.delete(new Path(versionPath(version)), true);
+            fs.delete(new Path(versionPath(version)), true);
             return ret;
         }
     }
@@ -86,8 +102,8 @@ public class VersionedStore {
     }
 
     public void deleteVersion(long version) throws IOException {
-        _fs.delete(new Path(versionPath(version)), true);
-        _fs.delete(new Path(tokenPath(version)), false);
+        fs.delete(new Path(versionPath(version)), true);
+        fs.delete(new Path(tokenPath(version)), false);
     }
 
     public void succeedVersion(String path) throws IOException {
@@ -109,10 +125,10 @@ public class VersionedStore {
         }
         HashSet<Long> keepers = new HashSet<Long>(versions);
 
-        for(Path p: listDir(_root)) {
+        for(Path p: listDir(root)) {
             Long v = parseVersion(p.toString());
             if(v!=null && !keepers.contains(v)) {
-                _fs.delete(p, true);
+                fs.delete(p, true);
             }
         }
     }
@@ -121,14 +137,33 @@ public class VersionedStore {
      * Sorted from most recent to oldest
      */
     public List<Long> getAllVersions() throws IOException {
+        return getAllVersions(false);
+    }
+
+    public List<Long> getAllVersions(boolean skipVersionSuffix) throws IOException {
         List<Long> ret = new ArrayList<Long>();
-        for(Path p: listDir(_root)) {
-            if(p.getName().endsWith(FINISHED_VERSION_SUFFIX)) {
-                ret.add(validateAndGetVersion(p.toString()));
+
+        Path rootPath = new Path(getRoot());
+        if (getFileSystem().exists(rootPath)) {
+            for(Path p: listDir(getRoot())) {
+                final FileStatus status = getFileSystem().getFileStatus(p);
+                if (skipVersionSuffix) {
+                    // backwards compatible if version suffix does not exist
+                    if(Utils.isLong(p.getName())) {
+                        ret.add(Long.valueOf(p.getName()));
+                    }
+                } else {
+                    if (p.getName().endsWith(FINISHED_VERSION_SUFFIX)) {
+                        ret.add(validateAndGetVersion(p.toString()));
+                    } else if (status != null && status.isDir() && getFileSystem().exists(new Path(p, HADOOP_SUCCESS_FLAG))) {
+                        // FORCE the _SUCCESS flag into the versioned store directory.
+                        ret.add(validateAndGetVersion(p.toString() + FINISHED_VERSION_SUFFIX));
+                    }
+                }
             }
+            Collections.sort(ret);
+            Collections.reverse(ret);
         }
-        Collections.sort(ret);
-        Collections.reverse(ret);
         return ret;
     }
 
@@ -137,16 +172,16 @@ public class VersionedStore {
     }
 
     private String tokenPath(long version) {
-        return new Path(_root, "" + version + FINISHED_VERSION_SUFFIX).toString();
+        return new Path(root, "" + version + FINISHED_VERSION_SUFFIX).toString();
     }
 
     private Path normalizePath(String p) {
-        return new Path(p).makeQualified(_fs);
+        return new Path(p).makeQualified(fs);
     }
 
     private long validateAndGetVersion(String path) {
-        if(!normalizePath(path).getParent().equals(normalizePath(_root))) {
-            throw new RuntimeException(path + " " + new Path(path).getParent() + " is not part of the versioned store located at " + _root);
+        if(!normalizePath(path).getParent().equals(normalizePath(root))) {
+            throw new RuntimeException(path + " " + new Path(path).getParent() + " is not part of the versioned store located at " + root);
         }
         Long v = parseVersion(path);
         if(v==null) throw new RuntimeException(path + " is not a valid version");
@@ -166,29 +201,34 @@ public class VersionedStore {
     }
 
     private void createNewFile(String path) throws IOException {
-        if(_fs instanceof LocalFileSystem)
+        if(fs instanceof LocalFileSystem)
             new File(path).createNewFile();
         else 
-            _fs.createNewFile(new Path(path));
+            fs.createNewFile(new Path(path));
     }
 
     private void mkdirs(String path) throws IOException {
-        if(_fs instanceof LocalFileSystem)
+        if(fs instanceof LocalFileSystem)
             new File(path).mkdirs();
-        else
-            _fs.mkdirs(new Path(path));            
+        else {
+            try {
+                fs.mkdirs(new Path(path));
+            } catch (AccessControlException e) {
+                throw new RuntimeException("Root directory doesn't exist, and user doesn't have the permissions " +
+                                           "to create" + path + ".", e);
+            }
+        }
     }
-
 
     private List<Path> listDir(String dir) throws IOException {
         List<Path> ret = new ArrayList<Path>();
-        if(_fs instanceof LocalFileSystem) {
+        if(fs instanceof LocalFileSystem) {
             for(File f: new File(dir).listFiles()) {
                 ret.add(new Path(f.getAbsolutePath()));
             }
         } else {
-            for(FileStatus fs: _fs.listStatus(new Path(dir))) {
-                ret.add(fs.getPath());
+            for(FileStatus status: fs.listStatus(new Path(dir))) {
+                ret.add(status.getPath());
             }
         }
         return ret;
