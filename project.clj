@@ -1,4 +1,4 @@
-(defproject backtype/dfs-datastores "1.2.0"
+(defproject backtype/dfs-datastores "1.2.1-SNAPSHOT"
   :min-lein-version "2.0.0"
   :description "Dead-simple vertical partitioning, compression, appends, and consolidation of data on a distributed filesystem."
   :url "https://github.com/nathanmarz/dfs-datastores"
