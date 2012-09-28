@@ -25,7 +25,7 @@ public class VersionedStore {
     public VersionedStore(String path) throws IOException {
       this(Utils.getFS(path), path);
     }
-    
+
     public VersionedStore(FileSystem fs, String path) throws IOException {
       this.fs = fs;
       root = path;
@@ -194,7 +194,7 @@ public class VersionedStore {
         return v;
     }
 
-    private Long parseVersion(String path) {
+    public Long parseVersion(String path) {
         String name = new Path(path).getName();
         if(name.endsWith(FINISHED_VERSION_SUFFIX)) {
             name = name.substring(0, name.length()-FINISHED_VERSION_SUFFIX.length());
@@ -209,7 +209,7 @@ public class VersionedStore {
     private void createNewFile(String path) throws IOException {
         if(fs instanceof LocalFileSystem)
             new File(path).createNewFile();
-        else 
+        else
             fs.createNewFile(new Path(path));
     }
 
