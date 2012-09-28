@@ -1,6 +1,7 @@
 package backtype.hadoop.datastores;
 
 import backtype.support.Utils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -29,6 +30,11 @@ public class VersionedStore {
       this.fs = fs;
       root = path;
       mkdirs(root);
+    }
+
+    public VersionedStore(Path path, Configuration conf) throws IOException {
+        this.fs = path.getFileSystem(conf);
+        this.root = path.toString();
     }
 
     public FileSystem getFileSystem() {
