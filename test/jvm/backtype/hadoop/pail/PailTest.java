@@ -1,7 +1,10 @@
 package backtype.hadoop.pail;
 
-import backtype.hadoop.formats.RecordInputStream;
-import backtype.hadoop.formats.RecordOutputStream;
+import static backtype.support.TestUtils.assertArraysEqual;
+import static backtype.support.TestUtils.assertPailContents;
+import static backtype.support.TestUtils.deletePath;
+import static backtype.support.TestUtils.getTmpPath;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,11 +12,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import static backtype.support.TestUtils.*;
+
+import backtype.hadoop.formats.RecordInputStream;
+import backtype.hadoop.formats.RecordOutputStream;
+import backtype.hadoop.pail.Pail.TypedRecordOutputStream;
 
 
 public class PailTest extends TestCase {
@@ -269,7 +277,7 @@ public class PailTest extends TestCase {
         assertPailContents(pail.getSubPail("z/a"), "za1", "za2");
 
         Pail a = new Pail(local, path + "/a");
-        os = a.openWrite();
+        os = (TypedRecordOutputStream) a.openWrite();
         os.writeObject("a2222");
         try {
             os.writeObject("zzz");
