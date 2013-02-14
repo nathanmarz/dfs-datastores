@@ -199,6 +199,19 @@ public class PailTap extends Hfs {
   }
 
   @Override
+  public String getIdentifier() {
+      if (_options.attrs != null && _options.attrs.length > 0) {
+          String rel = "";
+          for (List<String> attr : _options.attrs) {
+              rel += Utils.join(attr, Path.SEPARATOR);
+          }
+          return getPath().toString() + Path.SEPARATOR + rel;
+      } else {
+          return getPath().toString();
+      }
+  }
+
+  @Override
   public boolean deleteResource(JobConf conf) throws IOException {
     throw new UnsupportedOperationException();
   }
