@@ -12,7 +12,10 @@ object BijectionBuild extends Build {
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test" withSources()
     ),
 
-    resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo",
+    resolvers += Seq(
+      "Clojars" at "http://clojars.org/repo",
+      "Concurrent Maven Repo" at "http://conjars.org/repo"
+    ),
 
     parallelExecution in Test := false,
 
