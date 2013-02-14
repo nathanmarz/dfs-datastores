@@ -4,7 +4,7 @@ import sbtgitflow.ReleasePlugin._
 
 object BijectionBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ releaseSettings ++ Seq(
-    organization := "backtype",
+    organization := "com.backtype",
 
     libraryDependencies ++= Seq(
       "com.novocode" % "junit-interface" % "0.10-M2" % "test",
