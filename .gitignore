@@ -2,7 +2,6 @@
 *.ipr
 *.iws
 .idea/
-pom.xml
 lib/
 *.class
 *.jar
