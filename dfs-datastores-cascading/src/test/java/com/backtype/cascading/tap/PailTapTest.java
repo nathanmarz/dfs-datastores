@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static backtype.support.CascadingUtils.identityFlow;
-import static backtype.support.TestUtils.*;
+import static com.backtype.support.CascadingUtils.identityFlow;
+import static com.backtype.support.TestUtils.*;
 
 
 public class PailTapTest extends FSTestCase {

@@ -10,7 +10,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
-import static backtype.support.TestUtils.*;
+import static com.backtype.support.TestUtils.*;
 
 public class UtilsTest extends TestCase {
     public void testGetBytes() {

@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.hadoop.fs.Path;
-import static backtype.support.TestUtils.*;
+import static com.backtype.support.TestUtils.*;
 
 public class PailOpsTest extends FSTestCase {
     private void writeStrings(Pail pail, String userfile, String... strs) throws IOException {

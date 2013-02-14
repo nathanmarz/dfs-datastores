@@ -17,7 +17,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import static backtype.support.TestUtils.*;
+import static com.backtype.support.TestUtils.*;
 
 
 public abstract class PailFormatTester extends TestCase {
