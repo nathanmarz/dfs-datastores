@@ -12,7 +12,7 @@ object BijectionBuild extends Build {
       "org.scala-tools.testing" %% "specs" % "1.6.9" % "test" withSources()
     ),
 
-    resolvers += Seq(
+    resolvers ++= Seq(
       "Clojars" at "http://clojars.org/repo",
       "Concurrent Maven Repo" at "http://conjars.org/repo"
     ),
