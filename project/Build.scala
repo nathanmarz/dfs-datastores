@@ -6,6 +6,10 @@ object BijectionBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ releaseSettings ++ Seq(
     organization := "com.backtype",
 
+    autoScalaLibrary := false,
+
+    crossPaths := false,
+
     libraryDependencies ++= Seq(
       "com.novocode" % "junit-interface" % "0.10-M2" % "test",
       "org.scalacheck" %% "scalacheck" % "1.10.0" % "test" withSources(),
