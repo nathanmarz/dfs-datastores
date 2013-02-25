@@ -8,6 +8,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.jvyaml.YAML;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +19,8 @@ public class PailSpec implements Writable, Serializable {
     private String name;
     private Map<String, Object> args;
     private PailStructure structure;
+        
+    static final private ObjectMapper mObjectMapper = new ObjectMapper();
 
     private static final PailStructure DEFAULT_STRUCTURE = new DefaultPailStructure();
 
@@ -116,11 +120,34 @@ public class PailSpec implements Writable, Serializable {
         String name = (String) format.get("format");
         Map<String, Object> args = (Map<String, Object>) format.get("args");
         String structClass = (String) format.get("structure");
-        return new PailSpec(name, args, getStructureFromClass(structClass));
+        return new PailSpec(name, args, deserializePailStructure(structClass));
     }
 
     public void writeToStream(OutputStream os) {
         YAML.dump(mapify(), new OutputStreamWriter(os));
+    }
+    
+    static private PailStructure deserializePailStructure(String value) {    
+        try {
+            return getStructureFromClass(value);
+        } catch (Exception e) {
+            try {
+                return mObjectMapper.readValue(value, PailStructure.class);
+            } catch (IOException e1) {
+                throw new RuntimeException(e1.getMessage());
+            }
+        }
+    }
+    
+    private String serializePailStructure() {
+        try {
+            System.out.println(structure.getClass().toString());
+            String serialized = mObjectMapper.writeValueAsString(structure);
+            return serialized;
+        } catch (IOException e) {
+            System.err.println( e.getMessage() );
+            throw new RuntimeException(e);
+        }
     }
 
     private Map<String, Object> mapify() {
@@ -128,7 +155,7 @@ public class PailSpec implements Writable, Serializable {
         format.put("format", name);
         format.put("args", args);
         if(structure!=null) {
-            format.put("structure", structure.getClass().getName());
+            format.put("structure", serializePailStructure() );
         }
         return format;
     }
