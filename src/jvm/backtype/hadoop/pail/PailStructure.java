@@ -3,6 +3,7 @@ package backtype.hadoop.pail;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
@@ -14,5 +15,6 @@ public interface PailStructure<T> extends Serializable {
     public T deserialize(byte[] serialized);
     public byte[] serialize(T object);
     public List<String> getTarget(T object);
+    @JsonIgnore
     public Class getType();
 }
