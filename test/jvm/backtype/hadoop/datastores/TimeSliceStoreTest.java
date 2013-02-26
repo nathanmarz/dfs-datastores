@@ -1,8 +1,5 @@
 package backtype.hadoop.datastores;
 
-import org.testng.annotations.Test;
-import org.testng.Assert;
-import org.testng.AssertJUnit;
 import backtype.hadoop.datastores.TimeSliceStore.Slice;
 import backtype.hadoop.pail.Pail.TypedRecordOutputStream;
 import backtype.support.FSTestCase;
@@ -30,9 +27,9 @@ public class TimeSliceStoreTest extends FSTestCase {
 
     public static void assertSliceContains(TimeSliceStore s, Slice slice, Object... objs) throws IOException {
         Set objSet = new HashSet(readSlice(s, slice));
-        AssertJUnit.assertEquals(objSet.size(), objs.length);
+        assertEquals(objSet.size(), objs.length);
         for(Object o: objs) {
-            AssertJUnit.assertTrue(objSet.contains(o));
+            assertTrue(objSet.contains(o));
         }
     }
 
@@ -45,8 +42,7 @@ public class TimeSliceStoreTest extends FSTestCase {
         s.finishSlice(slice);
     }
 
-    @Test
-	public void testReadWrite() throws Exception {
+    public void testReadWrite() throws Exception {
         String tmp1 = getTmpPath(fs, "slices");
         TimeSliceStore<String> sliceStore = TimeSliceStore.create(fs, tmp1, new TimeSliceStringStructure());
         assertNull(sliceStore.maxSliceStartSecs());
@@ -54,14 +50,14 @@ public class TimeSliceStoreTest extends FSTestCase {
         
         try {
             sliceStore.openWrite(Utils.weekStartTime(100), Utils.weekStartTime(100)-1);
-            Assert.fail("should fail!");
+            fail("should fail!");
         } catch(IllegalArgumentException e) {
             
         }
         
         try {
             sliceStore.openWrite(Utils.weekStartTime(100)-1, Utils.weekStartTime(100));
-            Assert.fail("should fail!");
+            fail("should fail!");
         } catch(IllegalArgumentException e) {
 
         }
@@ -73,19 +69,19 @@ public class TimeSliceStoreTest extends FSTestCase {
 
         try {
             sliceStore.openRead(slice);
-            Assert.fail("should fail!");
+            fail("should fail!");
         } catch(IllegalArgumentException e) {
             
         }
-        AssertJUnit.assertFalse(sliceStore.isSliceExists(slice));
+        assertFalse(sliceStore.isSliceExists(slice));
         sliceStore.finishSlice(slice);
-        AssertJUnit.assertTrue(sliceStore.isSliceExists(slice));
+        assertTrue(sliceStore.isSliceExists(slice));
 
         assertSliceContains(sliceStore, slice, "a1", "a2");
 
         try {
             sliceStore.openWrite(Utils.weekStartTime(99), Utils.weekStartTime(99)+1);
-            Assert.fail("should fail!");
+            fail("should fail!");
         } catch(IllegalArgumentException e) {
 
         }
@@ -102,23 +98,23 @@ public class TimeSliceStoreTest extends FSTestCase {
 
         try {
             sliceStore.openWrite(Utils.weekStartTime(100), Utils.weekStartTime(100)+1);
-            Assert.fail("should fail!");
+            fail("should fail!");
         } catch(IllegalArgumentException e) {
 
         }
 
-        AssertJUnit.assertEquals(Utils.weekStartTime(100)+10, (int) sliceStore.maxSliceStartSecs());
-        AssertJUnit.assertEquals(Utils.weekStartTime(100), (int) sliceStore.minSliceStartSecs());
+        assertEquals(Utils.weekStartTime(100)+10, (int) sliceStore.maxSliceStartSecs());
+        assertEquals(Utils.weekStartTime(100), (int) sliceStore.minSliceStartSecs());
 
         try {
             sliceStore.finishSlice(Utils.weekStartTime(300), Utils.weekStartTime(299));
-            Assert.fail("should fail");
+            fail("should fail");
         } catch(IllegalArgumentException e) {
 
         }
 
         sliceStore.finishSlice(Utils.weekStartTime(200), Utils.weekStartTime(200) + 21);
-        AssertJUnit.assertEquals(Utils.weekStartTime(200) + 21, (int) sliceStore.maxSliceStartSecs());
+        assertEquals(Utils.weekStartTime(200) + 21, (int) sliceStore.maxSliceStartSecs());
 
 
     }
@@ -142,28 +138,27 @@ public class TimeSliceStoreTest extends FSTestCase {
 
         try {
             op.append(base, invalid);
-            Assert.fail("should fail!");
+            fail("should fail!");
         } catch(IllegalArgumentException e) {
 
         }
-        AssertJUnit.assertEquals(1, base.getWeekStarts().size());
-        AssertJUnit.assertEquals(Utils.weekStartTime(90)+1, (int) base.minSliceStartSecs());
-        AssertJUnit.assertEquals(Utils.weekStartTime(90)+1, (int) base.maxSliceStartSecs());
+        assertEquals(1, base.getWeekStarts().size());
+        assertEquals(Utils.weekStartTime(90)+1, (int) base.minSliceStartSecs());
+        assertEquals(Utils.weekStartTime(90)+1, (int) base.maxSliceStartSecs());
 
         assertSliceContains(base, new Slice(Utils.weekStartTime(90), Utils.weekStartTime(90)+1), "aa");
 
         op.append(base, valid);
 
-        AssertJUnit.assertEquals(2, base.getWeekStarts().size());
-        AssertJUnit.assertEquals(Utils.weekStartTime(90)+1, (int) base.minSliceStartSecs());
-        AssertJUnit.assertEquals(Utils.weekStartTime(91)+1, (int) base.maxSliceStartSecs());
+        assertEquals(2, base.getWeekStarts().size());
+        assertEquals(Utils.weekStartTime(90)+1, (int) base.minSliceStartSecs());
+        assertEquals(Utils.weekStartTime(91)+1, (int) base.maxSliceStartSecs());
         assertSliceContains(base, new Slice(Utils.weekStartTime(90), Utils.weekStartTime(90)+1), "aa");
         assertSliceContains(base, new Slice(Utils.weekStartTime(91), Utils.weekStartTime(91)+1), "cc");
 
     }
 
-    @Test
-	public void testCopyAppend() throws Exception {
+    public void testCopyAppend() throws Exception {
         appendTester(new AppendOperation() {
             public void append(TimeSliceStore dest, TimeSliceStore source) throws IOException {
                 dest.copyAppend(source);
@@ -171,8 +166,7 @@ public class TimeSliceStoreTest extends FSTestCase {
         });
     }
 
-    @Test
-	public void testMoveAppend() throws Exception {
+    public void testMoveAppend() throws Exception {
         appendTester(new AppendOperation() {
             public void append(TimeSliceStore dest, TimeSliceStore source) throws IOException {
                 dest.moveAppend(source);
@@ -180,8 +174,7 @@ public class TimeSliceStoreTest extends FSTestCase {
         });
     }
 
-    @Test
-	public void testAbsorb() throws Exception {
+    public void testAbsorb() throws Exception {
         appendTester(new AppendOperation() {
             public void append(TimeSliceStore dest, TimeSliceStore source) throws IOException {
                 dest.absorb(source);
@@ -189,8 +182,7 @@ public class TimeSliceStoreTest extends FSTestCase {
         });
     }
 
-    @Test
-	public void testConsolidate() throws Exception {
+    public void testConsolidate() throws Exception {
         String tmp = getTmpPath(fs, "sliceStore");
 
         TimeSliceStore store = TimeSliceStore.create(tmp, new TimeSliceStringStructure());
