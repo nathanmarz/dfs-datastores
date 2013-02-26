@@ -43,9 +43,9 @@ public class PailTap extends Hfs {
     volatile private static Logger LOG = Logger.getLogger(PailTap.class);
 
     public static PailSpec makeSpec(PailSpec given, PailStructure structure) {
-        return (given == null)
-                ? PailFormatFactory.getDefaultCopy().setStructure(structure)
-                : given.setStructure(structure);
+        return (given==null)
+            ? PailFormatFactory.getDefaultCopy().setStructure(structure)
+            : given.setStructure(structure);
     }
 
     public static class PailTapOptions implements Serializable {
@@ -57,12 +57,12 @@ public class PailTap extends Hfs {
         public PailTapOptions() {
 
         }
-
+        
         public PailTapOptions(PailSpec spec) {
             this.spec = spec;
         }
-
-        public PailTapOptions(PailSpec spec, List<String>[] attrs) {
+        
+        public PailTapOptions(PailSpec spec, List<String>[] attrs ) {
             this.spec = spec;
             this.attrs = attrs;
         }
@@ -91,6 +91,7 @@ public class PailTap extends Hfs {
         }
     }
 
+
     public class PailScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
         private PailTapOptions _options;
 
@@ -108,7 +109,7 @@ public class PailTap extends Hfs {
 
         protected Object deserialize(BytesWritable record) {
             PailStructure structure = getStructure();
-            if (structure instanceof BinaryPailStructure) {
+            if(structure instanceof BinaryPailStructure) {
                 return record;
             } else {
                 return structure.deserialize(Utils.getBytes(record));
@@ -116,7 +117,7 @@ public class PailTap extends Hfs {
         }
 
         protected void serialize(Object obj, BytesWritable ret) {
-            if (obj instanceof BytesWritable) {
+            if(obj instanceof BytesWritable) {
                 ret.set((BytesWritable) obj);
             } else {
                 byte[] b = getStructure().serialize(obj);
@@ -127,8 +128,8 @@ public class PailTap extends Hfs {
         private transient PailStructure _structure;
 
         public PailStructure getStructure() {
-            if (_structure == null) {
-                if (getSpec() == null) {
+            if(_structure==null) {
+                if(getSpec()==null) {
                     _structure = PailFormatFactory.getDefaultCopy().getStructure();
                 } else {
                     _structure = getSpec().getStructure();
@@ -141,7 +142,7 @@ public class PailTap extends Hfs {
         public void sourceConfInit(FlowProcess<JobConf> process, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
             Pail p;
             try {
-                p = new Pail(_pailRoot); // make sure it exists
+                p = new Pail(_pailRoot); //make sure it exists
             } catch (IOException e) {
                 throw new TapException(e);
             }
@@ -149,9 +150,8 @@ public class PailTap extends Hfs {
             PailFormatFactory.setPailPathLister(conf, _options.lister);
         }
 
-        @Override
-        public void sinkConfInit(FlowProcess<JobConf> flowProcess,
-                Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
+        @Override public void sinkConfInit(FlowProcess<JobConf> flowProcess,
+            Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
             conf.setOutputFormat(PailOutputFormat.class);
             Utils.setObject(conf, PailOutputFormat.SPEC_ARG, getSpec());
             try {
@@ -174,8 +174,7 @@ public class PailTap extends Hfs {
             Object k = sourceCall.getContext()[0];
             Object v = sourceCall.getContext()[1];
             boolean result = sourceCall.getInput().next(k, v);
-            if (!result)
-                return false;
+            if(!result) return false;
             String relPath = ((Text) k).toString();
             Object value = deserialize((BytesWritable) v);
             sourceCall.getIncomingEntry().setTuple(new Tuple(relPath, value));
@@ -188,12 +187,10 @@ public class PailTap extends Hfs {
 
             Object obj = tuple.getObject(0);
             String key;
-            // a hack since byte[] isn't natively handled by hadoop
+            //a hack since byte[] isn't natively handled by hadoop
             key = getKey(obj);
-            if (bw == null)
-                bw = new BytesWritable();
-            if (keyW == null)
-                keyW = new Text();
+            if(bw==null) bw = new BytesWritable();
+            if(keyW==null) keyW = new Text();
             serialize(obj, bw);
             keyW.set(key);
             sinkCall.getOutput().collect(keyW, bw);
@@ -201,7 +198,7 @@ public class PailTap extends Hfs {
 
         private String getKey(Object obj) {
             String key;
-            if (getStructure() instanceof DefaultPailStructure) {
+            if(getStructure() instanceof DefaultPailStructure) {
                 key = getCategory(obj);
             } else {
                 key = Utils.join(getStructure().getTarget(obj), "/") + getCategory(obj);
@@ -224,13 +221,13 @@ public class PailTap extends Hfs {
         setScheme(new PailScheme(options));
         _pailRoot = root;
     }
-
+    
     public List<Path> getPaths() {
         final List<Path> paths = new ArrayList<Path>();
-        if (_options.attrs != null && _options.attrs.length > 0) {
-            for (List<String> attr : _options.attrs) {
+        if(_options.attrs!=null && _options.attrs.length>0) {
+            for(List<String> attr: _options.attrs) {
                 String rel = Utils.join(attr, "/");
-                paths.add(new Path(_pailRoot, rel));
+                paths.add(new Path( _pailRoot, rel));
             }
         } else {
             paths.add(new Path(_pailRoot));
@@ -247,16 +244,17 @@ public class PailTap extends Hfs {
         throw new UnsupportedOperationException();
     }
 
-    // no good way to override this, just had to copy/paste and modify
+
+    //no good way to override this, just had to copy/paste and modify
     @Override
     public void sourceConfInit(FlowProcess<JobConf> process, JobConf conf) {
         try {
             Path root = getQualifiedPath(conf);
-            if (_options.attrs != null && _options.attrs.length > 0) {
+            if(_options.attrs!=null && _options.attrs.length>0) {
                 Pail pail = new Pail(_pailRoot);
-                for (List<String> attr : _options.attrs) {
+                for(List<String> attr: _options.attrs) {
                     String rel = Utils.join(attr, "/");
-                    pail.getSubPail(rel); // ensure the path exists
+                    pail.getSubPail(rel); //ensure the path exists
                     Path toAdd = new Path(root, rel);
                     LOG.info("Adding input path " + toAdd.toString());
                     FileInputFormat.addInputPath(conf, toAdd);
@@ -266,27 +264,27 @@ public class PailTap extends Hfs {
             }
 
             getScheme().sourceConfInit(process, this, conf);
-            makeLocal(conf, getQualifiedPath(conf), "forcing job to local mode, via source: ");
-            TupleSerialization.setSerializations(conf);
-        } catch (IOException e) {
+            makeLocal( conf, getQualifiedPath(conf), "forcing job to local mode, via source: " );
+            TupleSerialization.setSerializations( conf );
+        } catch(IOException e) {
             throw new TapException(e);
         }
     }
 
     private void makeLocal(JobConf conf, Path qualifiedPath, String infoMessage) {
-        if (!conf.get("mapred.job.tracker", "").equalsIgnoreCase("local") &&
-                qualifiedPath.toUri().getScheme().equalsIgnoreCase("file"))
+        if( !conf.get( "mapred.job.tracker", "" ).equalsIgnoreCase( "local" ) &&
+            qualifiedPath.toUri().getScheme().equalsIgnoreCase( "file" ) )
         {
-            if (LOG.isInfoEnabled())
-                LOG.info(infoMessage + toString());
+            if( LOG.isInfoEnabled() )
+                LOG.info( infoMessage + toString() );
 
-            conf.set("mapred.job.tracker", "local"); // force job to run locally
+            conf.set( "mapred.job.tracker", "local" ); // force job to run locally
         }
     }
 
     @Override
     public void sinkConfInit(FlowProcess<JobConf> process, JobConf conf) {
-        if (_options.attrs != null && _options.attrs.length > 0)
+        if(_options.attrs!=null && _options.attrs.length > 0)
             throw new TapException("can't declare attributes in a sink");
 
         super.sinkConfInit(process, conf);
@@ -294,22 +292,22 @@ public class PailTap extends Hfs {
 
     @Override
     public boolean commitResource(JobConf conf) throws IOException {
-        Pail p = Pail.create(_pailRoot, ((PailScheme) getScheme()).getSpec(), false);
+        Pail p = Pail.create(_pailRoot, ((PailScheme)getScheme()).getSpec(), false);
         FileSystem fs = p.getFileSystem();
         Path tmpPath = new Path(_pailRoot, "_temporary");
-        if (fs.exists(tmpPath)) {
+        if(fs.exists(tmpPath)) {
             LOG.info("Deleting _temporary directory left by Hadoop job: " + tmpPath.toString());
             fs.delete(tmpPath, true);
         }
 
         Path tmp2Path = new Path(_pailRoot, "_temporary2");
-        if (fs.exists(tmp2Path)) {
+        if(fs.exists(tmp2Path)) {
             LOG.info("Deleting _temporary2 directory: " + tmp2Path.toString());
             fs.delete(tmp2Path, true);
         }
 
         Path logPath = new Path(_pailRoot, "_logs");
-        if (fs.exists(logPath)) {
+        if(fs.exists(logPath)) {
             LOG.info("Deleting _logs directory left by Hadoop job: " + logPath.toString());
             fs.delete(logPath, true);
         }
@@ -324,16 +322,16 @@ public class PailTap extends Hfs {
 
     @Override
     public boolean equals(Object object) {
-        if (!getClass().equals(object.getClass())) {
+        if(!getClass().equals(object.getClass())) {
             return false;
         }
         PailTap other = (PailTap) object;
         Set<List<String>> myattrs = new HashSet<List<String>>();
-        if (_options.attrs != null) {
+        if(_options.attrs!=null) {
             Collections.addAll(myattrs, _options.attrs);
         }
         Set<List<String>> otherattrs = new HashSet<List<String>>();
-        if (other._options.attrs != null) {
+        if(other._options.attrs!=null) {
             Collections.addAll(otherattrs, other._options.attrs);
         }
         return _pailRoot.equals(other._pailRoot) && myattrs.equals(otherattrs);
@@ -346,6 +344,7 @@ public class PailTap extends Hfs {
     public String get_pailRoot() {
         return _pailRoot;
     }
+
 
     public PailTapOptions get_options() {
         return _options;
