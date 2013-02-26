@@ -11,5 +11,5 @@ import java.util.List;
  *
  */
 public interface PathLister extends Serializable {
-    public List<Path> getFiles(FileSystem fs, String path);
+    public List<Path> getFiles(FileSystem fs, String path); 
 }
