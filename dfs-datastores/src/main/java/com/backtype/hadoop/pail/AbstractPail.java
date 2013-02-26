@@ -1,4 +1,4 @@
-package backtype.hadoop.pail;
+package com.backtype.hadoop.pail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,9 +8,9 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
-import com.backtype.hadoop.formats.RecordInputStream;
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.support.Utils;
+import backtype.hadoop.formats.RecordInputStream;
+import backtype.hadoop.formats.RecordOutputStream;
+import backtype.support.Utils;
 
 
 public abstract class AbstractPail {

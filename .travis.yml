@@ -6,10 +6,4 @@
 #
 # http://about.travis-ci.org/docs/user/build-configuration/
 
-language: clojure
-lein: lein2
-script: lein2 test
-branches:
-  only:
-    - develop
-    - master
+language: scala
