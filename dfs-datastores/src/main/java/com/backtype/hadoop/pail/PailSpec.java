@@ -142,7 +142,7 @@ public class PailSpec implements Writable, Serializable {
             try {
                 return mObjectMapper.readValue(value, PailStructure.class);
             } catch (IOException e1) {
-                throw new RuntimeException(e1.getMessage());
+                throw new RuntimeException("cannot deserialize " + value + ": " + e1.getMessage());
             }
         }
     }
