@@ -180,7 +180,7 @@ public class PailTap extends Hfs {
 
   }
 
-  private String _pailRoot;
+  protected String _pailRoot;
   private PailTapOptions _options;
 
   protected String getCategory(Object obj) {
