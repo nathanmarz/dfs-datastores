@@ -50,8 +50,7 @@ public class PailTapTest extends FSTestCase {
         Tap source = new PailTap(pail);
         Pipe pipe = new Pipe("pipe");
         pipe = new Each(pipe, new Fields("bytes"), new Add1(), new Fields("result"));
-        PailTapOptions options = new PailTapOptions();
-        options.fieldName = "result";
+        PailTapOptions options = new PailTapOptions().fieldName("result");
         Tap sink = new PailTap(sinkpath, options);
 
         new HadoopFlowConnector().connect(source, sink, pipe).complete();
