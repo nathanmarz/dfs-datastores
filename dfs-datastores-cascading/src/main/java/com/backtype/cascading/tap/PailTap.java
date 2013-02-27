@@ -48,32 +48,61 @@ public class PailTap extends Hfs {
   }
 
   public static class PailTapOptions implements Serializable {
-    public PailSpec spec = null;
-    public String fieldName = "bytes";
-    public String outputFieldName = null;
-    public List<String>[] attrs = null;
-    public PailPathLister lister = null;
+    public PailSpec getSpec() {
+		return spec;
+	}
+
+	public String getFieldName() {
+		return fieldName;
+	}
+
+	public String getOutputFieldName() {
+		return outputFieldName;
+	}
+
+	public List<String>[] getAttrs() {
+		return attrs;
+	}
+
+	public PailPathLister getLister() {
+		return lister;
+	}
+
+	private PailSpec spec = null;
+	private String fieldName = "bytes";
+	private String outputFieldName = null;
+	private List<String>[] attrs = null;
+	private PailPathLister lister = null;
 
     public PailTapOptions() {
 
     }
-
-    public PailTapOptions(PailSpec spec, String fieldName, List<String>[] attrs,
-        PailPathLister lister) {
-      this.spec = spec;
-      this.fieldName = fieldName;
-      this.attrs = attrs;
-      this.lister = lister;
+    
+    public PailTapOptions spec( PailSpec spec ) {
+        this.spec = spec;
+        return this;
     }
     
-    public PailTapOptions(PailSpec spec, String fieldName, String outputFieldName, List<String>[] attrs,
-            PailPathLister lister) {
-          this.spec = spec;
-          this.fieldName = fieldName;
-          this.attrs = attrs;
-          this.lister = lister;
-          this.outputFieldName = outputFieldName;
-        }
+    public PailTapOptions fieldName( String fieldName ) {
+        this.fieldName = fieldName;
+        return this;
+    }
+    
+    public PailTapOptions outputFieldName( String outputFieldName ) {
+        this.outputFieldName = outputFieldName;
+        return this;
+    }
+    
+    public PailTapOptions attrs( List<String>[] attrs ) {
+        this.attrs = attrs;
+        return this;
+    }
+    
+    public PailTapOptions lister( PailPathLister lister ) {
+        this.lister = lister;
+        return this;
+    }
+    
   }
 
   public class PailScheme
