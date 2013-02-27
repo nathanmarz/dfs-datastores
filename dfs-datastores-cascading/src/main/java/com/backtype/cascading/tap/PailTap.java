@@ -50,6 +50,7 @@ public class PailTap extends Hfs {
   public static class PailTapOptions implements Serializable {
     public PailSpec spec = null;
     public String fieldName = "bytes";
+    public String outputFieldName = null;
     public List<String>[] attrs = null;
     public PailPathLister lister = null;
 
@@ -64,6 +65,15 @@ public class PailTap extends Hfs {
       this.attrs = attrs;
       this.lister = lister;
     }
+    
+    public PailTapOptions(PailSpec spec, String fieldName, String outputFieldName, List<String>[] attrs,
+            PailPathLister lister) {
+          this.spec = spec;
+          this.fieldName = fieldName;
+          this.attrs = attrs;
+          this.lister = lister;
+          this.outputFieldName = outputFieldName;
+        }
   }
 
   public class PailScheme
@@ -164,7 +174,7 @@ public class PailTap extends Hfs {
         throws IOException {
       TupleEntry tuple = sinkCall.getOutgoingEntry();
 
-      Object obj = tuple.getObject(0);
+      Object obj = tuple.getObject(_options.outputFieldName == null ? 0 : _options.outputFieldName);
       String key;
       //a hack since byte[] isn't natively handled by hadoop
       if (getStructure() instanceof DefaultPailStructure) {
