@@ -11,9 +11,7 @@ object BijectionBuild extends Build {
     crossPaths := false,
 
     libraryDependencies ++= Seq(
-      "com.novocode" % "junit-interface" % "0.10-M2" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test" withSources(),
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test" withSources()
+      "com.novocode" % "junit-interface" % "0.10-M2" % "test"
     ),
 
     resolvers ++= Seq(
