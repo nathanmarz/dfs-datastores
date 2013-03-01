@@ -8,13 +8,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.UUID;
 
 public abstract class AbstractFileCopyMapper extends MapReduceBase implements Mapper<Text, Text, NullWritable, NullWritable> {
-    public static Logger LOG = Logger.getLogger(AbstractFileCopyMapper.class);
+    public static Logger LOG = LoggerFactory.getLogger(AbstractFileCopyMapper.class);
 
     private FileSystem fsSource;
     private FileSystem fsDest;
