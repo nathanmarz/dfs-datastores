@@ -7,14 +7,15 @@ import com.backtype.support.Utils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
 public class Pail<T> extends AbstractPail implements Iterable<T>{
-    public static Logger LOG = Logger.getLogger(Pail.class);
+    public static Logger LOG = LoggerFactory.getLogger(Pail.class);
 
     public static final String META = "pail.meta";
 

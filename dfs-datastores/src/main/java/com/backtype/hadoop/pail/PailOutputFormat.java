@@ -8,14 +8,15 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.Progressable;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
-    public static Logger LOG = Logger.getLogger(PailOutputFormat.class);
+    public static Logger LOG = LoggerFactory.getLogger(PailOutputFormat.class);
     public static final String SPEC_ARG = "pail_spec_arg";
 
     // we limit the size of outputted files because of s3 file limits
