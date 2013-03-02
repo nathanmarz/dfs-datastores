@@ -12,6 +12,7 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.log4j.Logger;
+import org.mortbay.log.Log;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -87,7 +88,9 @@ public class Consolidator {
         ConsolidatorArgs args = new ConsolidatorArgs(fsUri, streams, lister, dirs, targetSizeBytes, extension);
         Utils.setObject(conf, ARGS, args);
 
-        conf.setJobName("Consolidator: " + getDirsString(dirs));
+        String dirsString = getDirsString(dirs);
+        
+        conf.setJobName("Consolidator: " + dirsString.substring(0,  Math.min(80, dirsString.length())));
 
         conf.setInputFormat(ConsolidatorInputFormat.class);
         conf.setOutputFormat(NullOutputFormat.class);
@@ -103,11 +106,13 @@ public class Consolidator {
         try {
             registerShutdownHook();
             job = new JobClient(conf).submitJob(conf);
+            Log.info("starting consolidator job id " + job.getID());
 
             while(!job.isComplete()) {
                 Thread.sleep(100);
             }
-            if(!job.isSuccessful()) throw new IOException("Consolidator failed");
+            
+            if(!job.isSuccessful()) throw new IOException("Consolidator failed: " + job.getFailureInfo());
             deregisterShutdownHook();
         } catch(IOException e) {
 
@@ -148,12 +153,14 @@ public class Consolidator {
         ConsolidatorArgs args;
 
         public void map(ArrayWritable sourcesArr, Text target, OutputCollector<NullWritable, NullWritable> oc, Reporter rprtr) throws IOException {
-
+            LOG.info("Mapper starting for" + target.toString());
             Path finalFile = new Path(target.toString());
 
             List<Path> sources = new ArrayList<Path>();
             for(int i=0; i<sourcesArr.get().length; i++) {
-                sources.add(new Path(((Text)sourcesArr.get()[i]).toString()));
+            	String source = ((Text)sourcesArr.get()[i]).toString();
+            	LOG.info("source: " + source);
+                sources.add(new Path(source));
             }
             //must have failed after succeeding to create file but before task finished - this is valid
             //because path is selected with a UUID
