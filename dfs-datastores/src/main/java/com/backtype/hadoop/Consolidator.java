@@ -90,7 +90,7 @@ public class Consolidator {
 
         String dirsString = getDirsString(dirs);
         
-        conf.setJobName("Consolidator: " + jobName == null ? dirsString.substring(0,  Math.min(80, dirsString.length())) : jobName);
+        conf.setJobName("Consolidator: " + (jobName == null ? dirsString.substring(0,  Math.min(80, dirsString.length())) : jobName));
 
         conf.setInputFormat(ConsolidatorInputFormat.class);
         conf.setOutputFormat(NullOutputFormat.class);
