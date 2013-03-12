@@ -264,7 +264,7 @@ public class TimeSliceStore<T> {
      * Should only call this if you know there are no readers.
      */
     public void consolidate() throws IOException {
-        _pail.consolidate();
+        _pail.consolidate(null);
     }
 
     public void consolidate(Slice slice) throws IOException {
@@ -272,7 +272,7 @@ public class TimeSliceStore<T> {
     }
 
     public void consolidate(int weekStart, int sliceStart) throws IOException {
-        _pail.getSubPail(weekStart, sliceStart).consolidate();
+        _pail.getSubPail(weekStart, sliceStart).consolidate(null);
     }
 
     private void doAppend(TimeSliceStore<T> other, AppendFunction function) throws IOException {

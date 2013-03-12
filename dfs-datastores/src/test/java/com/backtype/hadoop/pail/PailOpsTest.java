@@ -85,7 +85,7 @@ public class PailOpsTest extends FSTestCase {
         writeStrings(pail, "h", "zzz");
         pail.writeMetadata("a/b/qqq", "lalala");
         pail.writeMetadata("f", "abc");
-        pail.consolidate();
+        pail.consolidate(null);
         assertEquals(1, pail.getUserFileNames().size());
         Set<String> results = new HashSet<String>(readWithIt(pail));
         Set<String> expected = new HashSet<String>(Arrays.asList("a", "b", "c", "d", "e",
@@ -106,7 +106,7 @@ public class PailOpsTest extends FSTestCase {
         writeStrings(pail, "h", "zzz");
         long target = local.getContentSummary(pail.toStoredPath("f")).getLength() +
                 local.getContentSummary(pail.toStoredPath("g")).getLength() + 1;
-        pail.consolidate(target);
+        pail.consolidate(null,target);
         assertTrue(pail.getUserFileNames().size() < 6 && pail.getUserFileNames().size() > 1);
         Set<String> results = new HashSet<String>(readWithIt(pail));
         Set<String> expected = new HashSet<String>(Arrays.asList("a", "b", "c", "d", "e",
@@ -131,7 +131,7 @@ public class PailOpsTest extends FSTestCase {
         os.writeObject("a8");
         os.writeObject("za3");
         os.close();
-        pail.consolidate();
+        pail.consolidate(null);
         assertPailContents(pail, "a1", "b1", "c1", "a2", "za1", "za2", "zb1", "a7", "a8", "za3");
         assertPailContents(pail.getSubPail("a"), "a1", "a2", "a7", "a8");
         assertPailContents(pail.getSubPail("z"), "za1", "za2", "zb1", "za3");

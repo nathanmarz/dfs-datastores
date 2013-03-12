@@ -461,11 +461,11 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         }
     }
 
-    public void consolidate() throws IOException {
-        consolidate(Consolidator.DEFAULT_CONSOLIDATION_SIZE);
+    public void consolidate(String jobName) throws IOException {
+        consolidate(jobName, Consolidator.DEFAULT_CONSOLIDATION_SIZE);
     }
 
-    public void consolidate(long maxSize) throws IOException {
+    public void consolidate(String jobName, long maxSize) throws IOException {
         List<String> toCheck = new ArrayList<String>();
         toCheck.add("");
         PailStructure structure = getSpec().getStructure();
@@ -495,7 +495,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             }
         }
 
-        Consolidator.consolidate(_fs, _format, new PailPathLister(false), consolidatedirs, maxSize, EXTENSION);
+        Consolidator.consolidate(jobName, _fs, _format, new PailPathLister(false), consolidatedirs, maxSize, EXTENSION);
     }
 
     @Override

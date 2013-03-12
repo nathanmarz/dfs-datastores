@@ -48,26 +48,26 @@ public class Consolidator {
         }
     }
 
-    public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
+    public static void consolidate(String jobName, FileSystem fs, String targetDir, RecordStreamFactory streams,
         PathLister pathLister, long targetSizeBytes) throws IOException {
-        consolidate(fs, targetDir, streams, pathLister, targetSizeBytes, "");
+        consolidate(jobName, fs, targetDir, streams, pathLister, targetSizeBytes, "");
     }
 
-    public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
+    public static void consolidate(String jobName, FileSystem fs, String targetDir, RecordStreamFactory streams,
         PathLister pathLister, String extension) throws IOException {
-        consolidate(fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, extension);
+        consolidate(jobName, fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, extension);
     }
 
-    public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
+    public static void consolidate(String jobName, FileSystem fs, String targetDir, RecordStreamFactory streams,
         PathLister pathLister) throws IOException {
-        consolidate(fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, "");
+        consolidate(jobName, fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, "");
     }
 
-    public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
+    public static void consolidate(String jobName, FileSystem fs, String targetDir, RecordStreamFactory streams,
         PathLister pathLister, long targetSizeBytes, String extension) throws IOException {
         List<String> dirs = new ArrayList<String>();
         dirs.add(targetDir);
-        consolidate(fs, streams, pathLister, dirs, targetSizeBytes, extension);
+        consolidate(jobName, fs, streams, pathLister, dirs, targetSizeBytes, extension);
     }
 
     private static String getDirsString(List<String> targetDirs) {
@@ -81,7 +81,7 @@ public class Consolidator {
         return ret;
     }
 
-    public static void consolidate(FileSystem fs, RecordStreamFactory streams, PathLister lister, List<String> dirs,
+    public static void consolidate(String jobName, FileSystem fs, RecordStreamFactory streams, PathLister lister, List<String> dirs,
         long targetSizeBytes, String extension) throws IOException {
         JobConf conf = new JobConf(fs.getConf(), Consolidator.class);
         String fsUri = fs.getUri().toString();
@@ -90,7 +90,7 @@ public class Consolidator {
 
         String dirsString = getDirsString(dirs);
         
-        conf.setJobName("Consolidator: " + dirsString.substring(0,  Math.min(80, dirsString.length())));
+        conf.setJobName("Consolidator: " + jobName == null ? dirsString.substring(0,  Math.min(80, dirsString.length())) : jobName);
 
         conf.setInputFormat(ConsolidatorInputFormat.class);
         conf.setOutputFormat(NullOutputFormat.class);
