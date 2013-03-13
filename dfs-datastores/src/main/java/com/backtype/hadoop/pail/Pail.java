@@ -188,7 +188,8 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
     private static Object[] getSpecAndRoot(FileSystem fs, Path path) throws IOException {
         Path curr = path;
         Object[] ret = null;
-        while(true) {
+        while( curr != null ) { //  changed as per oscar
+        //while(true) {
             Path meta = new Path(curr, META);
             if(fs.exists(meta)) {
                 if(ret!=null) throw new RuntimeException("At least two meta files up directory tree");
