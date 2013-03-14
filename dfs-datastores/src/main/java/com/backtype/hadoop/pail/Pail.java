@@ -555,17 +555,22 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
     }
 
     protected void checkValidStructure(String userfilename) {
-        List<String> full = componentsFromRoot(userfilename);
+        final List<String> full = componentsFromRoot(userfilename);
         full.remove(full.size()-1);
         //hack to get around how hadoop does outputs --> _temporary and _attempt*
         while(full.size()>0 && full.get(0).startsWith("_")) {
             full.remove(0);
         }
-        if(!getSpec().getStructure().isValidTarget(full.toArray(new String[full.size()]))) {
-            throw new IllegalArgumentException(
-                    userfilename + " is not valid with the pail structure " + getSpec().toString() +
-                    " --> " + full.toString());
+        final List<String> original = new ArrayList<String>(full);
+        while( ! full.isEmpty() ) {
+            if( getSpec().getStructure().isValidTarget(full.toArray(new String[full.size()])) ) {
+            	return;
+            }
+            full.remove(full.size()-1);
         }
+        throw new IllegalArgumentException(
+                userfilename + " is not valid with the pail structure " + getSpec().toString() +
+                " --> " + original.toString());
     }
 
     protected static class PailPathLister implements PathLister {
