@@ -21,6 +21,9 @@ public class VersionedTap extends Hfs {
 
   public Long version = null;
 
+  // a sane default for the number of versions of your data to keep around
+  private int versionsToKeep = 3;
+
   // source-specific
   public TapMode mode;
 
@@ -33,9 +36,23 @@ public class VersionedTap extends Hfs {
     this.mode = mode;
   }
 
+
   public VersionedTap setVersion(long version) {
     this.version = version;
     return this;
+  }
+
+  /**
+    * Sets the number of versions of your data to keep. Unneeded versions are cleaned up on creation
+    * of a new one. Pass a negative number to keep all versions.
+    */
+  public VersionTap setVersionsToKeep(int versionsToKeep) {
+    this.versionsToKeep = versionsToKeep;
+    return this;
+  }
+
+  public int getVersionsToKeep() {
+    return this.versionstoKeep;
   }
 
   public String getOutputDirectory() {
@@ -113,6 +130,7 @@ public class VersionedTap extends Hfs {
       store.succeedVersion(newVersionPath);
       CascadingUtils.markSuccessfulOutputDir(new Path(newVersionPath), conf);
       newVersionPath = null;
+      store.cleanup(getVersionsToKeep());
     }
 
     return true;
