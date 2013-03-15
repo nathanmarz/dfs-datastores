@@ -556,7 +556,6 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
 
     protected void checkValidStructure(String userfilename) {
         final List<String> full = componentsFromRoot(userfilename);
-        full.remove(full.size()-1);
         //hack to get around how hadoop does outputs --> _temporary and _attempt*
         while(full.size()>0 && full.get(0).startsWith("_")) {
             full.remove(0);
