@@ -218,26 +218,35 @@ public abstract class AbstractPail {
     }
 
     protected List<String> readDir(String subdir, boolean dir) throws IOException {
-        Path absDir;
-        if(subdir.length()==0) {
-            absDir = new Path(_instance_root);
-        } else {
-            absDir = new Path(_instance_root, subdir);
-        }
-
-        List<String> ret = new ArrayList<String>();
-        FileStatus[] contents = listStatus(absDir);
+        final Path absDir = (subdir.length()==0) ? new Path(_instance_root) : new Path(_instance_root, subdir);        
+        return readDir(new ArrayList<String>(), absDir, dir, 0);
+    }
+    
+    protected List<String> readDir(List<String> ret, Path absDir, boolean dir, int level) throws IOException {
+        final FileStatus[] contents = listStatus(absDir);
         for(FileStatus fs: contents) {
-            String name = fs.getPath().getName();
+            final String name = fs.getPath().getName();
             if((fs.isDir() && dir || !fs.isDir() && !dir) && !name.contains("_")) {
-                ret.add(name);
+                if( level == 0 ) {
+                    ret.add(name);
+                } else {
+                    if( fs.isDir() ) {
+                        readDir( ret, new Path(absDir, name), dir, level-1);
+                    }
+                }
             }
         }
         return ret;
     }
 
     public List<String> getAttrsAtDir(String subdir) throws IOException {
-        return readDir(subdir, true);
+        return getAttrsAtDir(subdir, 1);
+    }
+    
+    public List<String> getAttrsAtDir(String subdir, int levels) throws IOException {
+        assert( levels > 0 );
+        final Path absDir = (subdir.length()==0) ? new Path(_instance_root) : new Path(_instance_root, subdir);     
+        return readDir(new ArrayList<String>(), absDir, true, levels-1);
     }
 
     public List<String> getMetadataFileNames(String subdir) throws IOException {
