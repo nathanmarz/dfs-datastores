@@ -14,6 +14,7 @@ import com.backtype.hadoop.pail.PailStructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import java.io.*;
 import java.util.HashMap;
@@ -26,7 +27,9 @@ public class PailSpec implements Writable, Serializable {
     private PailStructure structure;
         
     static final private ObjectMapper mObjectMapper = new ObjectMapper();
+    
     static {
+        mObjectMapper.registerModule(new JodaModule());
         mObjectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 
