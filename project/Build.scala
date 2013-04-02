@@ -2,13 +2,15 @@ import sbt._
 import Keys._
 import sbtgitflow.ReleasePlugin._
 
-object BijectionBuild extends Build {
+object DfsDatastoresBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ releaseSettings ++ Seq(
     organization := "com.backtype",
 
     autoScalaLibrary := false,
 
     crossPaths := false,
+
+    javacOptions ++= Seq("-target", "1.6", "-source", "1.6"),
 
     libraryDependencies ++= Seq(
       "com.novocode" % "junit-interface" % "0.10-M2" % "test",
