@@ -18,7 +18,8 @@ import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.mapred.*;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -82,7 +83,7 @@ public class SequenceFileFormat implements PailFormat {
 
 
     public static class SequenceFilePailRecordReader implements RecordReader<Text, BytesWritable> {
-        private static Logger LOG = Logger.getLogger(SequenceFilePailRecordReader.class);
+        private static Logger LOG = LoggerFactory.getLogger(SequenceFilePailRecordReader.class);
         public static final int NUM_TRIES = 10;
 
         JobConf conf;

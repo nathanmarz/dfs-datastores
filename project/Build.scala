@@ -15,8 +15,8 @@ object DfsDatastoresBuild extends Build {
 
     libraryDependencies ++= Seq(
       "com.novocode" % "junit-interface" % "0.10-M2" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test" withSources(),
-      "org.scala-tools.testing" %% "specs" % "1.6.9" % "test" withSources()
+      // To silence warning in test logs. Library should depend only on the API.
+      "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "test"
     ),
 
     resolvers ++= Seq(
@@ -92,8 +92,7 @@ object DfsDatastoresBuild extends Build {
   ).settings(
     name := "dfs-datastores",
     libraryDependencies ++= Seq(
-      "log4j" % "log4j" % "1.2.16",
-      "org.slf4j" % "slf4j-log4j12" % "1.6.6",
+      "org.slf4j" % "slf4j-api" % "1.6.6",
       "jvyaml" % "jvyaml" % "1.0.0",
       "com.google.guava" % "guava" % "13.0",
       "org.apache.hadoop" % "hadoop-core" % "1.0.3"

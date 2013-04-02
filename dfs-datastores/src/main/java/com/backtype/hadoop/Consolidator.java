@@ -11,7 +11,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -142,7 +143,7 @@ public class Consolidator {
     }
 
     public static class ConsolidatorMapper extends MapReduceBase implements Mapper<ArrayWritable, Text, NullWritable, NullWritable> {
-        public static Logger LOG = Logger.getLogger(ConsolidatorMapper.class);
+        public static Logger LOG = LoggerFactory.getLogger(ConsolidatorMapper.class);
 
         FileSystem fs;
         ConsolidatorArgs args;
