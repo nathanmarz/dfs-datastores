@@ -10,7 +10,8 @@ object DfsDatastoresBuild extends Build {
 
     crossPaths := false,
 
-    javacOptions ++= Seq("-target", "1.6", "-source", "1.6"),
+    javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
+    javacOptions in doc := Seq("-source", "1.6"),
 
     libraryDependencies ++= Seq(
       "com.novocode" % "junit-interface" % "0.10-M2" % "test",
