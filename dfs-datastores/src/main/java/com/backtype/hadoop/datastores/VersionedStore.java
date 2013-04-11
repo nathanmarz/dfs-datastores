@@ -187,7 +187,7 @@ public class VersionedStore {
 
     /** The path to the hadoop-created success flag file which may or may not exist */
     private String successFlagPath(long version) {
-        return new Path(versionPath(version), HADOOP_SUCCESS_FLAG).toString()
+        return new Path(versionPath(version), HADOOP_SUCCESS_FLAG).toString();
     }
 
     private Path normalizePath(String p) {

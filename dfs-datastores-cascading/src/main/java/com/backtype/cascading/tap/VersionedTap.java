@@ -46,13 +46,13 @@ public class VersionedTap extends Hfs {
     * Sets the number of versions of your data to keep. Unneeded versions are cleaned up on creation
     * of a new one. Pass a negative number to keep all versions.
     */
-  public VersionTap setVersionsToKeep(int versionsToKeep) {
+  public VersionedTap setVersionsToKeep(int versionsToKeep) {
     this.versionsToKeep = versionsToKeep;
     return this;
   }
 
   public int getVersionsToKeep() {
-    return this.versionstoKeep;
+    return this.versionsToKeep;
   }
 
   public String getOutputDirectory() {
