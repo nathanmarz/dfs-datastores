@@ -108,8 +108,10 @@ public class VersionedStore {
     }
 
     public void deleteVersion(long version) throws IOException {
-        fs.delete(new Path(versionPath(version)), true);
+        // Be sure to delete success indicators before data
         fs.delete(new Path(tokenPath(version)), false);
+        fs.delete(new Path(successFlagPath(version)), false);
+        fs.delete(new Path(versionPath(version)), true);
     }
 
     public void succeedVersion(String path) throws IOException {
@@ -121,20 +123,22 @@ public class VersionedStore {
     }
 
     public void cleanup() throws IOException {
+        // Default behavior is to clean up NOTHING
         cleanup(-1);
     }
 
     public void cleanup(int versionsToKeep) throws IOException {
-        List<Long> versions = getAllVersions();
+        final List<Long> versions = getAllVersions();
+        final HashSet<Long> keepers;
         if(versionsToKeep >= 0) {
-            versions = versions.subList(0, Math.min(versions.size(), versionsToKeep));
+            keepers = new HashSet<Long>(versions.subList(0, Math.min(versions.size(), versionsToKeep)));
+        } else {
+            keepers = new HashSet<Long>(versions);
         }
-        HashSet<Long> keepers = new HashSet<Long>(versions);
 
-        for(Path p: listDir(root)) {
-            Long v = parseVersion(p.toString());
+        for(Long v : versions) {
             if(v!=null && !keepers.contains(v)) {
-                fs.delete(p, true);
+                    deleteVersion(v);
             }
         }
     }
@@ -179,6 +183,11 @@ public class VersionedStore {
 
     private String tokenPath(long version) {
         return new Path(root, "" + version + FINISHED_VERSION_SUFFIX).toString();
+    }
+
+    /** The path to the hadoop-created success flag file which may or may not exist */
+    private String successFlagPath(long version) {
+        return new Path(versionPath(version), HADOOP_SUCCESS_FLAG).toString();
     }
 
     private Path normalizePath(String p) {
