@@ -244,9 +244,15 @@ public abstract class AbstractPail {
     }
     
     public List<String> getAttrsAtDir(String subdir, int levels) throws IOException {
-        assert( levels > 0 );
-        final Path absDir = (subdir.length()==0) ? new Path(_instance_root) : new Path(_instance_root, subdir);     
-        return readDir(new ArrayList<String>(), "", absDir, true, levels-1);
+        assert( levels >= 0 );
+        if( levels == 0 ) {
+        	List<String> ret = new ArrayList<String>();
+        	ret.add("");
+        	return ret;
+        } else {
+            final Path absDir = (subdir.length()==0) ? new Path(_instance_root) : new Path(_instance_root, subdir);     
+            return readDir(new ArrayList<String>(), "", absDir, true, levels-1);
+        }
     }
 
     public List<String> getMetadataFileNames(String subdir) throws IOException {
