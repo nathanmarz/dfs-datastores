@@ -21,7 +21,8 @@ object DfsDatastoresBuild extends Build {
 
     resolvers ++= Seq(
       "Clojars" at "http://clojars.org/repo",
-      "Concurrent Maven Repo" at "http://conjars.org/repo"
+      "Concurrent Maven Repo" at "http://conjars.org/repo",
+      "Twttr Maven Repo"  at "http://maven.twttr.com/"
     ),
 
     parallelExecution in Test := false,
@@ -95,7 +96,8 @@ object DfsDatastoresBuild extends Build {
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "jvyaml" % "jvyaml" % "1.0.0",
       "com.google.guava" % "guava" % "13.0",
-      "org.apache.hadoop" % "hadoop-core" % "1.0.3"
+      "org.apache.hadoop" % "hadoop-core" % "1.0.3",
+      "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.15"
     )
   )
 

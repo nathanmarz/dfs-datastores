@@ -6,6 +6,7 @@ import com.backtype.hadoop.formats.SequenceFileInputStream;
 import com.backtype.hadoop.formats.SequenceFileOutputStream;
 import com.backtype.support.KeywordArgParser;
 import com.backtype.support.Utils;
+import com.hadoop.compression.lzo.LzoCodec;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -39,6 +40,7 @@ public class SequenceFileFormat implements PailFormat {
     public static final String CODEC_ARG_DEFAULT = "default";
     public static final String CODEC_ARG_GZIP = "gzip";
     public static final String CODEC_ARG_BZIP2 = "bzip2";
+    public static final String CODEC_ARG_LZO = "lzo";
 
     private static final Map<String, CompressionType> TYPES = new HashMap<String, CompressionType>() {{
         put(TYPE_ARG_RECORD, CompressionType.RECORD);
@@ -49,6 +51,7 @@ public class SequenceFileFormat implements PailFormat {
         put(CODEC_ARG_DEFAULT, new DefaultCodec());
         put(CODEC_ARG_GZIP, new GzipCodec());
         put(CODEC_ARG_BZIP2, new BZip2Codec());
+        put(CODEC_ARG_LZO, new LzoCodec());
     }};
 
     private String _typeArg;
