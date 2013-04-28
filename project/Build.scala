@@ -36,13 +36,15 @@ object DfsDatastoresBuild extends Build {
 
     pomIncludeRepository := { x => false },
 
-    publishTo <<= version { (v: String) =>
-      val nexus = "https://oss.sonatype.org/"
-      if (v.trim.endsWith("SNAPSHOT"))
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-    },
+//    publishTo <<= version { (v: String) =>
+//      val nexus = "https://oss.sonatype.org/"
+//      if (v.trim.endsWith("SNAPSHOT"))
+//        Some("snapshots" at nexus + "content/repositories/snapshots")
+//      else
+//        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+//    },
+
+    publishTo := Some(Resolver.file("file",  new File( Path.userHome.absolutePath + "/mvn_repo/repository/releases" )) ),
 
     pomExtra := (
       <url>https://github.com/nathanmarz/dfs-datastores</url>
