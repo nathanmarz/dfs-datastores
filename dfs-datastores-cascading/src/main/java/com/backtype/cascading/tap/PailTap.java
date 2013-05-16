@@ -212,7 +212,7 @@ public class PailTap extends Hfs {
   }
 
   @Override
-  public long getModifiedTime(JobConf conf) {
+  public long getModifiedTime(JobConf conf) throws IOException {
     // TODO: We should either set sinkMode.REPLACE or return something real here when used as a source.
     return 0;
   }
