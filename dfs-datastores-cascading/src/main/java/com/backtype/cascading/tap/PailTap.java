@@ -27,7 +27,9 @@ import com.backtype.hadoop.pail.PailPathLister;
 import com.backtype.hadoop.pail.PailSpec;
 import com.backtype.hadoop.pail.PailStructure;
 import com.backtype.support.Utils;
+
 import cascading.flow.FlowProcess;
+import cascading.operation.OperationCall;
 import cascading.scheme.Scheme;
 import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
@@ -38,6 +40,83 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.hadoop.TupleSerialization;
+
+import cascading.tuple.Tuple;
+import cascading.tuple.hadoop.TupleSerialization;
+import cascading.tuple.hadoop.io.HadoopTupleInputStream;
+import cascading.tuple.hadoop.io.HadoopTupleOutputStream;
+import cascading.tuple.io.TupleInputStream;
+import cascading.tuple.io.TupleOutputStream;
+import org.apache.hadoop.io.serializer.Deserializer;
+import org.apache.hadoop.io.serializer.Serialization;
+import org.apache.hadoop.io.serializer.SerializationFactory;
+import org.apache.hadoop.io.serializer.Serializer;
+import org.apache.hadoop.mapred.JobConf;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+
+class TupleSerializationUtil implements Serializable {
+  private static final int BUFFER_SIZE = 4096;
+  private final JobConf jobConf;
+  private transient TupleSerialization serialization = null;
+  private transient ByteArrayOutputStream bytesOutputStream = null;
+  private transient TupleOutputStream tupleOutputStream = null;
+  private transient Serializer<Tuple> tupleSerializer = null;
+  private transient Deserializer<Tuple> tupleDeserializer = null;
+
+  public TupleSerializationUtil(JobConf jobConf) {
+    this.jobConf = jobConf;
+  }
+
+  public byte[] serialize(Tuple tuple) throws IOException {
+    initSerializer();
+    bytesOutputStream.reset();
+    tupleSerializer.open(tupleOutputStream);
+    tupleSerializer.serialize(tuple);
+    return bytesOutputStream.toByteArray();
+  }
+
+  public Tuple deserialize(byte[] bytes) throws IOException {
+    initDeserializer();
+    Tuple tuple = new Tuple();
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+    TupleInputStream tupleInputStream = new HadoopTupleInputStream(inputStream, serialization.getElementReader());
+    tupleDeserializer.open(tupleInputStream);
+    tupleDeserializer.deserialize(tuple);
+    return tuple;
+  }
+
+  private void initSerializer() {
+    init();
+    if (bytesOutputStream == null) {
+      bytesOutputStream = new ByteArrayOutputStream(BUFFER_SIZE);
+    }
+    if (tupleOutputStream == null) {
+      tupleOutputStream = new HadoopTupleOutputStream(bytesOutputStream, serialization.getElementWriter());
+    }
+    if (tupleSerializer == null) {
+      tupleSerializer = serialization.getSerializer(Tuple.class);
+    }
+  }
+
+  private void initDeserializer() {
+    init();
+    if (tupleDeserializer == null) {
+      tupleDeserializer = serialization.getDeserializer(Tuple.class);
+    }
+  }
+
+  private void init() {
+    if (serialization == null) {
+      serialization = new TupleSerialization(jobConf);
+    }
+  }
+}
+
+
 
 public class PailTap extends Hfs {
   private static Logger LOG = Logger.getLogger(PailTap.class);
@@ -56,8 +135,8 @@ public class PailTap extends Hfs {
 		return fieldName;
 	}
 
-	public String getOutputFieldName() {
-		return outputFieldName;
+	public Fields getOutputFields() {
+		return outputFields;
 	}
 
 	public List<String>[] getAttrs() {
@@ -70,9 +149,11 @@ public class PailTap extends Hfs {
 
 	private PailSpec spec = null;
 	private String fieldName = "bytes";
-	private String outputFieldName = null;
+	private Fields outputFields = new Fields( fieldName );
+	private boolean useHadoopSerialization = false;
 	private List<String>[] attrs = null;
 	private PailPathLister lister = null;
+	public boolean wrapInTuple = false;
 
     public PailTapOptions() {
 
@@ -88,8 +169,18 @@ public class PailTap extends Hfs {
         return this;
     }
     
-    public PailTapOptions outputFieldName( String outputFieldName ) {
-        this.outputFieldName = outputFieldName;
+    public PailTapOptions wrapInTuple( boolean wrapInTuple ) {
+        this.wrapInTuple = wrapInTuple;
+        return this;
+    }
+    
+    public PailTapOptions useHadoopSerialization( boolean useHadoopSerialization ) {
+        this.useHadoopSerialization = useHadoopSerialization;
+        return this;
+    }
+    
+    public PailTapOptions outputFields( Fields outputFields ) {
+        this.outputFields = outputFields;
         return this;
     }
     
@@ -110,7 +201,7 @@ public class PailTap extends Hfs {
     private PailTapOptions _options;
 
     public PailScheme(PailTapOptions options) {
-      super(new Fields("pail_root", options.fieldName), Fields.ALL);
+      super(new Fields("pail_root").append(options.outputFields), Fields.ALL);
       _options = options;
     }
 
@@ -140,6 +231,7 @@ public class PailTap extends Hfs {
     }
 
     private transient PailStructure _structure;
+    private transient TupleSerializationUtil tupleSerializationUtil;
 
     public PailStructure getStructure() {
       if (_structure == null) {
@@ -163,6 +255,9 @@ public class PailTap extends Hfs {
       }
       conf.setInputFormat(p.getFormat().getInputFormatClass());
       PailFormatFactory.setPailPathLister(conf, _options.lister);
+      
+      tupleSerializationUtil =  new TupleSerializationUtil(conf);
+
     }
 
     @Override public void sinkConfInit(FlowProcess<JobConf> flowProcess,
@@ -183,6 +278,7 @@ public class PailTap extends Hfs {
 
       sourceCall.getContext()[0] = sourceCall.getInput().createKey();
       sourceCall.getContext()[1] = sourceCall.getInput().createValue();
+      
     }
 
     @Override
@@ -193,8 +289,14 @@ public class PailTap extends Hfs {
       boolean result = sourceCall.getInput().next(k, v);
       if (!result) { return false; }
       String relPath = ((Text) k).toString();
-      Object value = deserialize((BytesWritable) v);
-      sourceCall.getIncomingEntry().setTuple(new Tuple(relPath, value));
+       
+      Object value = _options.useHadoopSerialization ? tupleSerializationUtil.deserialize(Utils.getBytes((BytesWritable) v)) : deserialize((BytesWritable) v);
+      if( _options.wrapInTuple ) {
+          sourceCall.getIncomingEntry().setTuple(new Tuple(relPath).append((Tuple)value));
+      } else {
+          sourceCall.getIncomingEntry().setTuple(new Tuple(relPath, value));
+
+      }
       return true;
     }
 
@@ -203,7 +305,10 @@ public class PailTap extends Hfs {
         throws IOException {
       TupleEntry tuple = sinkCall.getOutgoingEntry();
 
-      Object obj = tuple.getObject(_options.outputFieldName == null ? 0 : _options.outputFieldName);
+      Tuple selected = tuple.selectTuple(_options.outputFields);
+      
+      Object obj = _options.wrapInTuple ? selected : selected.getObject(0);
+
       String key;
       //a hack since byte[] isn't natively handled by hadoop
       if (getStructure() instanceof DefaultPailStructure) {
@@ -213,7 +318,13 @@ public class PailTap extends Hfs {
       }
       if (bw == null) { bw = new BytesWritable(); }
       if (keyW == null) { keyW = new Text(); }
-      serialize(obj, bw);
+      
+      if( _options.useHadoopSerialization ) {
+          byte[] bytes = tupleSerializationUtil.serialize(selected);
+          bw.set(bytes, 0, bytes.length);
+      } else {
+          serialize(obj, bw);
+      }
       keyW.set(key);
       sinkCall.getOutput().collect(keyW, bw);
     }
