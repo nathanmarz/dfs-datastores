@@ -17,7 +17,6 @@ import org.apache.hadoop.io.compress.BZip2Codec;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.io.compress.GzipCodec;
-import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.mapred.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,6 @@ public class SequenceFileFormat implements PailFormat {
     public static final String CODEC_ARG_DEFAULT = "default";
     public static final String CODEC_ARG_GZIP = "gzip";
     public static final String CODEC_ARG_BZIP2 = "bzip2";
-    public static final String CODEC_ARG_SNAPPY = "snappy";
 
     private static final Map<String, CompressionType> TYPES = new HashMap<String, CompressionType>() {{
         put(TYPE_ARG_RECORD, CompressionType.RECORD);
@@ -51,7 +49,6 @@ public class SequenceFileFormat implements PailFormat {
         put(CODEC_ARG_DEFAULT, new DefaultCodec());
         put(CODEC_ARG_GZIP, new GzipCodec());
         put(CODEC_ARG_BZIP2, new BZip2Codec());
-        put(CODEC_ARG_SNAPPY, new SnappyCodec());
     }};
 
     private String _typeArg;
@@ -60,7 +57,7 @@ public class SequenceFileFormat implements PailFormat {
     public SequenceFileFormat(Map<String, Object> args) {
         args = new KeywordArgParser()
                 .add(TYPE_ARG, null, true, TYPE_ARG_RECORD, TYPE_ARG_BLOCK)
-                .add(CODEC_ARG, CODEC_ARG_DEFAULT, false, CODEC_ARG_DEFAULT, CODEC_ARG_GZIP, CODEC_ARG_BZIP2, CODEC_ARG_SNAPPY)
+                .add(CODEC_ARG, CODEC_ARG_DEFAULT, false, CODEC_ARG_DEFAULT, CODEC_ARG_GZIP, CODEC_ARG_BZIP2)
                 .parse(args);
         _typeArg = (String) args.get(TYPE_ARG);
         _codecArg = (String) args.get(CODEC_ARG);
