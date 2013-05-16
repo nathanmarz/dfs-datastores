@@ -95,7 +95,7 @@ object DfsDatastoresBuild extends Build {
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "jvyaml" % "jvyaml" % "1.0.0",
       "com.google.guava" % "guava" % "13.0",
-      "org.apache.hadoop" % "hadoop-core" % "1.0.3"
+      "org.apache.hadoop" % "hadoop-core" % "1.0.3" % "provided"
     )
   )
 
@@ -106,8 +106,8 @@ object DfsDatastoresBuild extends Build {
   ).settings(
     name := "dfs-datastores-cascading",
     libraryDependencies ++= Seq(
-      "cascading" % "cascading-core" % "2.0.7",
-      "cascading" % "cascading-hadoop" % "2.0.7"
+      "cascading" % "cascading-core" % "2.0.8",
+      "cascading" % "cascading-hadoop" % "2.0.8"
     )
   ).dependsOn(core)
 }

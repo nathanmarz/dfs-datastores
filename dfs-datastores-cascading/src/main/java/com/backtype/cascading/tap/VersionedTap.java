@@ -117,9 +117,15 @@ public class VersionedTap extends Hfs {
   public String getIdentifier() {
     String outDir = getOutputDirectory();
     String versionString = (version == null) ? "LATEST" : version.toString();
-    return "manhattan"
+    return outDir + Path.SEPARATOR
            + ((mode == TapMode.SINK) ? "sink" : "source")
-           + ":" + outDir + ":" + versionString;
+           + Path.SEPARATOR + versionString;
+  }
+
+  @Override
+  public long getModifiedTime(JobConf conf) throws IOException {
+    VersionedStore store = getStore(conf);
+    return (mode == TapMode.SINK) ? 0 : store.mostRecentVersion();
   }
 
   @Override
