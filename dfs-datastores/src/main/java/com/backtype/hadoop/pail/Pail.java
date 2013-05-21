@@ -314,6 +314,12 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         return mine.getName().equals(other.getName()) && mine.getArgs().equals(other.getArgs());
     }
 
+    public Pail snapshot(FileSystem fileSystem, String path) throws IOException {
+        Pail ret = createEmptyMimic(fileSystem, path);
+        ret.copyAppend(this, RenameMode.NO_RENAME);
+        return ret;
+    }
+
     public Pail snapshot(String path) throws IOException {
         Pail ret = createEmptyMimic(path);
         ret.copyAppend(this, RenameMode.NO_RENAME);
@@ -332,15 +338,18 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         }
     }
 
-    public Pail createEmptyMimic(String path) throws IOException {
-        FileSystem otherFs = Utils.getFS(path);
-        if(getSpec(otherFs, new Path(path))!=null) {
+    public Pail createEmptyMimic(FileSystem fileSystem, String path) throws IOException {
+        if(getSpec(fileSystem, new Path(path))!=null) {
             throw new IllegalArgumentException("Cannot make empty mimic at " + path + " because it is a subdir of a pail");
         }
-        if(otherFs.exists(new Path(path))) {
+        if(fileSystem.exists(new Path(path))) {
             throw new IllegalArgumentException(path + " already exists");
         }
-        return Pail.create(otherFs, path, getSpec(), true);
+        return Pail.create(fileSystem, path, getSpec(), true);
+    }
+
+    public Pail createEmptyMimic(String path) throws IOException {
+        return createEmptyMimic(Utils.getFS(path), path);
     }
 
     public void coerce(String path, String name, Map<String, Object> args) throws IOException {
