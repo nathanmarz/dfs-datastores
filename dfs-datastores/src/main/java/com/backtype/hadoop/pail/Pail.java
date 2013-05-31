@@ -17,6 +17,8 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
     public static Logger LOG = Logger.getLogger(Pail.class);
 
     public static final String META = "pail.meta";
+    final static private String[] emptyDirs = new String[0];
+
 
     public class TypedRecordOutputStream implements RecordOutputStream {
         private HashMap<String, RecordOutputStream> _workers = new HashMap<String, RecordOutputStream>();
@@ -567,9 +569,12 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             }
             full.remove(full.size()-1);
         }
-        throw new IllegalArgumentException(
-                userfilename + " is not valid with the pail structure " + getSpec().toString() +
-                " --> " + original.toString());
+        
+		if( ! getSpec().getStructure().isValidTarget(emptyDirs)) {
+            throw new IllegalArgumentException(
+                    userfilename + " is not valid with the pail structure " + getSpec().toString() +
+                    " --> " + original.toString());
+        }
     }
 
     protected static class PailPathLister implements PathLister {
