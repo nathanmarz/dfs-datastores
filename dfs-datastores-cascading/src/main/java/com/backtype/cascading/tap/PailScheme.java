@@ -149,9 +149,9 @@ public class PailScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     @Override
     public void sink(FlowProcess<JobConf> process, SinkCall<Object[], OutputCollector> sinkCall)
             throws IOException {
-        TupleEntry tuple = sinkCall.getOutgoingEntry();
+        TupleEntry tupleEntry = sinkCall.getOutgoingEntry();
 
-        Tuple selected = tuple.selectTuple(_options.outputFields);
+        Tuple selected = tupleEntry.selectTuple(_options.outputFields);
 
         Object obj = (_options.outputFields.size() > 1) ? selected : selected.getObject(0);
 

@@ -15,3 +15,7 @@ profiles.xml
 .lein-deps-sum
 build
 target
+.settings
+.classpath
+.project
+.gitignore

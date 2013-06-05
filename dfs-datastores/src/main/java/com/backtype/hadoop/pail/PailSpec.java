@@ -30,6 +30,7 @@ public class PailSpec implements Writable, Serializable {
     
     static {
         mObjectMapper.registerModule(new JodaModule());
+        mObjectMapper.registerModule(new CascadingModule());
         mObjectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 
