@@ -10,19 +10,20 @@ object DfsDatastoresBuild extends Build {
 
     crossPaths := false,
 
-    javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
-    javacOptions in doc := Seq("-source", "1.6"),
+    javacOptions ++= Seq("-source", "1.6", "-target", "1.7"),
+    javacOptions in doc := Seq("-source", "1.7"),
 
     libraryDependencies ++= Seq(
       "com.novocode" % "junit-interface" % "0.10-M2" % "test",
       // To silence warning in test logs. Library should depend only on the API.
-      "org.slf4j" % "slf4j-log4j12" % "1.6.6" % "test"
+      "org.slf4j" % "slf4j-log4j12" % "1.7.5" % "test"
     ),
 
     resolvers ++= Seq(
       "Clojars" at "http://clojars.org/repo",
       "Concurrent Maven Repo" at "http://conjars.org/repo",
-      "Twttr Maven Repo"  at "http://maven.twttr.com/"
+      "Twttr Maven Repo"  at "http://maven.twttr.com/",
+      "Cloudera Repo"  at "https://repository.cloudera.com/artifactory/cloudera-repos"
     ),
 
     parallelExecution in Test := false,
@@ -98,9 +99,13 @@ object DfsDatastoresBuild extends Build {
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "jvyaml" % "jvyaml" % "1.0.0",
       "com.google.guava" % "guava" % "13.0",
-      "org.apache.hadoop" % "hadoop-core" % "1.0.3",
+      "org.apache.hadoop" % "hadoop-core" % "2.0.0-mr1-cdh4.2.1",
+      "org.apache.hadoop" % "hadoop-client" % "2.0.0-mr1-cdh4.2.1",
+      "org.apache.hadoop" % "hadoop-common" % "2.0.0-cdh4.2.1",
+      "org.apache.hadoop" % "hadoop-hdfs" % "2.0.0-cdh4.2.1",
+      "org.apache.hadoop" % "hadoop-mapreduce" % "2.0.0-cdh4.2.1",
       "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.15"
-    )
+    ).map(_.exclude("commons-daemon", "commons-daemon"))
   )
 
   lazy val cascading = Project(
