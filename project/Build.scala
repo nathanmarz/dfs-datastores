@@ -103,7 +103,7 @@ object DfsDatastoresBuild extends Build {
       "org.apache.hadoop" % "hadoop-client" % "2.0.0-mr1-cdh4.2.1",
       "org.apache.hadoop" % "hadoop-common" % "2.0.0-cdh4.2.1",
       "org.apache.hadoop" % "hadoop-hdfs" % "2.0.0-cdh4.2.1",
-      "org.apache.hadoop" % "hadoop-mapreduce" % "2.0.0-cdh4.2.1",
+      //"org.apache.hadoop" % "hadoop-mapreduce" % "2.0.0-cdh4.2.1",
       "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.15"
     ).map(_.exclude("commons-daemon", "commons-daemon"))
   )
