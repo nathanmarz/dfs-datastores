@@ -54,7 +54,7 @@ public class SequenceFileFormat implements PailFormat {
     private String _typeArg;
     private String _codecArg;
 
-    public SequenceFileFormat(Map<String, Object> args) {
+    public void configure(Map<String, Object> args) {
         args = new KeywordArgParser()
                 .add(TYPE_ARG, null, true, TYPE_ARG_RECORD, TYPE_ARG_BLOCK)
                 .add(CODEC_ARG, CODEC_ARG_DEFAULT, false, CODEC_ARG_DEFAULT, CODEC_ARG_GZIP, CODEC_ARG_BZIP2)
