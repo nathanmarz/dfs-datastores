@@ -480,7 +480,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             	LOG.info("adding consolidation dir " +  dir );
                 consolidatedirs.add(toFullPath(dir));
             } else {
-            	LOG.info("not valid target " +  dir );
+            	LOG.debug("not valid target " +  dir );
 
                 FileStatus[] contents = listStatus(new Path(toFullPath(dir)));
                 for(FileStatus f: contents) {
