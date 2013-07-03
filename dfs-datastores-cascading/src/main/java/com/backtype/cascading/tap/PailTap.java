@@ -100,12 +100,19 @@ public class PailTap extends Hfs {
         }
     }
 
-    public List<Path> getPaths() {
+    public List<Path> getPaths() {   	
         final List<Path> paths = new ArrayList<Path>();
         if (_options.attrs != null && _options.attrs.length > 0) {
             for (List<String> attr : _options.attrs) {
                 String rel = Utils.join(attr, "/");
-                paths.add(new Path(_pailRoot, rel));
+                final Path path = new Path(_pailRoot, rel);
+                try {
+					if( Utils.getFS(path.toString()).exists(path)) {
+					    paths.add(path);
+					}
+				} catch (IOException e) {
+					LOG.warn("attributes do not exist for pail " +  rel);
+				}
             }
         } else {
             paths.add(new Path(_pailRoot));
