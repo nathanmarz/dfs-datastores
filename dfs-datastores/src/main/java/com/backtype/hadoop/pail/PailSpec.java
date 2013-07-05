@@ -6,7 +6,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
-import org.jvyaml.YAML;
+import org.yaml.snakeyaml.Yaml;
 
 import com.backtype.hadoop.pail.DefaultPailStructure;
 import com.backtype.hadoop.pail.PailSpec;
@@ -25,6 +25,8 @@ public class PailSpec implements Writable, Serializable {
     private String name;
     private Map<String, Object> args;
     private PailStructure structure;
+    
+    static final private Yaml mYaml = new Yaml();
         
     static final private ObjectMapper mObjectMapper = new ObjectMapper();
     
@@ -113,7 +115,7 @@ public class PailSpec implements Writable, Serializable {
     }
 
     public static PailSpec parseFromStream(InputStream is) {
-        Map format = (Map) YAML.load(new InputStreamReader(is));
+        Map format = (Map) mYaml.load(new InputStreamReader(is));
         return parseFromMap(format);
     }
 
@@ -136,7 +138,8 @@ public class PailSpec implements Writable, Serializable {
     }
 
     public void writeToStream(OutputStream os) {
-        YAML.dump(mapify(), new OutputStreamWriter(os));
+    	
+    	mYaml.dump(mapify(), new OutputStreamWriter(os));
     }
     
     static private PailStructure deserializePailStructure(String value) {    
@@ -177,12 +180,12 @@ public class PailSpec implements Writable, Serializable {
     }
 
     public void write(DataOutput d) throws IOException {
-        String ser = YAML.dump(mapify());
+        String ser = mYaml.dump(mapify());
         WritableUtils.writeString(d, ser);
     }
 
     public void readFields(DataInput di) throws IOException {
-        PailSpec spec = parseFromMap((Map<String, Object>)YAML.load(WritableUtils.readString(di)));
+        PailSpec spec = parseFromMap((Map<String, Object>)mYaml.load(WritableUtils.readString(di)));
         this.name = spec.name;
         this.args = spec.args;
     }
