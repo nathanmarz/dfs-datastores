@@ -173,8 +173,10 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             spec.writeToFileSystem(fs, new Path(pathp, META));
         }
 
-
-        return new Pail(fs, path);
+        if(spec!=null)
+            return new Pail(fs, path, spec);
+        else
+            return new Pail(fs, path);
     }
 
     private static PailSpec getSpec(FileSystem fs, Path path) throws IOException {
@@ -215,12 +217,16 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
     }
 
     public Pail(FileSystem fs, String path) throws IOException {
+        this(fs, path, getSpec(fs, new Path(path)));
+    }
+
+    public Pail(FileSystem fs, String path, PailSpec spec) throws IOException {
         super(path);
         _fs = fs;
         _root = getRoot(fs, new Path(path));
         if(_root==null || !fs.exists(new Path(path)))
             throw new IllegalArgumentException("Pail does not exist at path " + path);
-        _spec = getSpec(fs, new Path(path));
+        _spec = spec;
         _structure = _spec.getStructure();
         _format = PailFormatFactory.create(_spec);
     }
