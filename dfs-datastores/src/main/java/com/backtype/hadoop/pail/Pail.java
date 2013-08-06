@@ -220,6 +220,14 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         this(fs, path, getSpec(fs, new Path(path)));
     }
 
+    public Pail(String path, PailSpec spec) throws IOException {
+        this(Utils.getFS(path), path, spec);
+    }
+
+    public Pail(String path, PailStructure structure) throws IOException {
+        this(Utils.getFS(path), path, new PailSpec(structure));
+    }
+
     public Pail(FileSystem fs, String path, PailSpec spec) throws IOException {
         super(path);
         _fs = fs;
