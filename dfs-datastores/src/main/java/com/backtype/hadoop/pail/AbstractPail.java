@@ -6,7 +6,8 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
@@ -19,7 +20,7 @@ public abstract class AbstractPail {
     public static final String META_TEMP_EXTENSION = ".metafiletmp";
     private static final String TEMP_EXTENSION = ".pailfiletmp";
     
-    private final Logger mLogger = Logger.getLogger(getClass());
+    private final Logger mLogger = LoggerFactory.getLogger(getClass());
 
     private class PailOutputStream implements RecordOutputStream {
 
@@ -54,6 +55,7 @@ public abstract class AbstractPail {
         }
 
         public void close() throws IOException {
+        	mLogger.info("closing {}", tempFile.toString() );
             delegate.close();
             for( int sleepTime=100; sleepTime <16000; sleepTime*=2 ) {
                 if(rename(tempFile, finalFile)) {
@@ -68,7 +70,7 @@ public abstract class AbstractPail {
                     }
                 }
                 try {
-                    mLogger.warn("retryiung in " + sleepTime  + " milliseconds");
+                    mLogger.warn("retrying in " + sleepTime  + " milliseconds");
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
                     ;

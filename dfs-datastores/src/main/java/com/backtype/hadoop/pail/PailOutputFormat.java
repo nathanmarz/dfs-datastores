@@ -8,14 +8,17 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.Progressable;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
-    public static Logger LOG = Logger.getLogger(PailOutputFormat.class);
+    public static Logger LOG = LoggerFactory.getLogger(PailOutputFormat.class);
     public static final String SPEC_ARG = "pail_spec_arg";
 
     // we limit the size of outputted files because of s3 file limits
@@ -42,7 +45,24 @@ public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
             }
         }
 
-        private Map<String, OpenAttributeFile> _outputters = new HashMap<String, OpenAttributeFile>();
+        private Map<String, OpenAttributeFile> _outputters = new LinkedHashMap<String, OpenAttributeFile>() {
+            private static final int MAX_ENTRIES = 128;
+            
+            
+
+            protected boolean removeEldestEntry(Map.Entry<String, OpenAttributeFile> eldest) {
+            	if( size() > MAX_ENTRIES ) {
+                    try {
+    					eldest.getValue().os.close();
+    				} catch (IOException e) {
+    					throw new RuntimeException(e);
+    				}
+            		//LOG.info("eldest is being closed: {}",  eldest.getValue().filename );			
+            	}
+
+               return size() > MAX_ENTRIES;
+            }
+        };
         private int writtenRecords = 0;
         private int numFilesOpened = 0;
 
@@ -61,6 +81,7 @@ public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
 
         public void write(Text k, BytesWritable v) throws IOException {
             String attr = k.toString();
+            
             OpenAttributeFile oaf = _outputters.get(attr);
             if(oaf!=null && oaf.numBytesWritten >= FILE_LIMIT_SIZE_BYTES) {
                 closeAttributeFile(oaf);
@@ -75,7 +96,7 @@ public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
                     filename = _unique + numFilesOpened;
                 }
                 numFilesOpened++;
-                LOG.info("Opening " + filename + " for attribute " + attr);
+                LOG.info("Opening " + filename + " for attribute " + attr + " opened " + _outputters.size());
                 //need overwrite for situations where regular FileOutputCommitter isn't used (like S3)
                 oaf = new OpenAttributeFile(attr, filename, _pail.openWrite(filename, true));
                 _outputters.put(attr, oaf);
@@ -98,12 +119,14 @@ public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
             LOG.info("Closing " + oaf.filename + " for attr " + oaf.attr);
             //print out the size of the file here
             oaf.os.close();
-            LOG.info("Closed " + oaf.filename + " for attr " + oaf.attr);
+            LOG.info("Closed " + oaf.filename + " for attr " + oaf.attr + " remaining open: " + _outputters.size());
         }
 
         public void close(Reporter rprtr) throws IOException {
-            for(String key: _outputters.keySet()) {
-                closeAttributeFile(_outputters.get(key));
+        	Iterator<String> iterator = _outputters.keySet().iterator();
+        	while( iterator.hasNext() ) {
+                closeAttributeFile(_outputters.get(iterator.next()));
+                iterator.remove();
                 rprtr.progress();
             }
             _outputters.clear();

@@ -7,14 +7,15 @@ import com.backtype.support.Utils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
 public class Pail<T> extends AbstractPail implements Iterable<T>{
-    public static Logger LOG = Logger.getLogger(Pail.class);
+    public static Logger LOG = LoggerFactory.getLogger(Pail.class);
 
     public static final String META = "pail.meta";
     final static private String[] emptyDirs = new String[0];
@@ -57,6 +58,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         }
 
         public void close() throws IOException {
+        	LOG.info("closing all attribute files for {}", _userfilename);
             for(RecordOutputStream os: _workers.values()) {
                 os.close();
             }
@@ -620,6 +622,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         private List<String> filesleft;
         private TypedRecordInputStream curr = null;
         private T nextRecord;
+        private String filename;
 
         public PailIterator() {
             try {
@@ -635,9 +638,15 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
                 while(curr==null || (nextRecord = curr.readObject()) == null) {
                     if(curr!=null) curr.close();
                     if(filesleft.size()==0) break;
-                    curr = openRead(filesleft.remove(0));
+                    filename = filesleft.remove(0);
+                    curr = openRead(filename);
                 }
             } catch(IOException e) {
+            	try {
+					curr.close();
+				} catch (IOException e1) {
+					throw new RuntimeException(e);
+				}
                 throw new RuntimeException(e);
             }
         }
@@ -653,6 +662,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         }
 
         public void close() throws IOException {
+        	LOG.info("closing iterator on {}", filename);
             if(curr!=null) {
                 curr.close();
             }
