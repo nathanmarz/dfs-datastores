@@ -11,11 +11,13 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.junit.Test;
 
 public class FSTestCase extends TestCase {
     public FileSystem local;
     public FileSystem fs;
 
+    
     public FSTestCase() {
         try {
             local = FileSystem.getLocal(new Configuration());
@@ -23,5 +25,9 @@ public class FSTestCase extends TestCase {
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public void test() {
+        
     }
 }
