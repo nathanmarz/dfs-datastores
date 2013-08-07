@@ -145,7 +145,23 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         return create(Utils.getFS(path), path, spec, failOnExists);
     }
 
+    public static Pail create(String path, PailStructure structure, boolean failOnExists, boolean useSuppliedPailSpec) throws IOException {
+        return create(Utils.getFS(path), path, structure, failOnExists, useSuppliedPailSpec);
+    }
+
+    public static Pail create(FileSystem fs, String path, PailStructure structure, boolean failOnExists, boolean useSuppliedPailSpec) throws IOException {
+        return create(fs, path, new PailSpec(structure), failOnExists, useSuppliedPailSpec);
+    }
+
+    public static Pail create(String path, PailSpec spec, boolean failOnExists, boolean useSuppliedPailSpec) throws IOException {
+        return create(Utils.getFS(path), path, spec, failOnExists, useSuppliedPailSpec);
+    }
+
     public static Pail create(FileSystem fs, String path, PailSpec spec, boolean failOnExists) throws IOException {
+        return create(fs, path, spec, failOnExists, false);
+    }
+
+    public static Pail create(FileSystem fs, String path, PailSpec spec, boolean failOnExists, boolean useSuppliedPailSpec) throws IOException {
         Path pathp = new Path(path);
         PailFormatFactory.create(spec);
         PailSpec existing = getSpec(fs, pathp);
@@ -173,7 +189,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             spec.writeToFileSystem(fs, new Path(pathp, META));
         }
 
-        if(spec!=null)
+        if(useSuppliedPailSpec)
             return new Pail(fs, path, spec);
         else
             return new Pail(fs, path);
