@@ -1,14 +1,13 @@
 package com.backtype.hadoop.pail;
 
+import com.backtype.support.Utils;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobConf;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.JobConf;
-
-import com.backtype.support.Utils;
 
 public class PailFormatFactory {
     public static final String SEQUENCE_FILE = "SequenceFile";
@@ -30,15 +29,17 @@ public class PailFormatFactory {
     }
 
     public static PailFormat create(PailSpec spec) {
+        PailFormat format = null;
         if(spec==null || spec.getName()==null) spec = getDefaultCopy();
-        String format = spec.getName();
+        String formatName = spec.getName();
         Map<String, Object> args = spec.getArgs();
         if(args==null) args = new HashMap<String, Object>();
-        if(format.equals(SEQUENCE_FILE)) {
-            return new SequenceFileFormat(args);
-        } else {
+        if(formatName.equals(SEQUENCE_FILE)) {
+             format = new SequenceFileFormat();
+        }
+        else {
             try {
-                return (PailFormat) Class.forName(format).newInstance();
+                format = (PailFormat) Class.forName(formatName).newInstance();
             } catch(ClassNotFoundException e) {
                 throw new RuntimeException(e);
             } catch(InstantiationException e) {
@@ -47,5 +48,7 @@ public class PailFormatFactory {
                 throw new RuntimeException(e);
             }
         }
+        format.configure(args);
+        return format;
     }
 }

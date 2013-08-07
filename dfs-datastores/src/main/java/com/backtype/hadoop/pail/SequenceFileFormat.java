@@ -1,12 +1,11 @@
 package com.backtype.hadoop.pail;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.backtype.hadoop.formats.RecordInputStream;
+import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.hadoop.formats.SequenceFileInputStream;
+import com.backtype.hadoop.formats.SequenceFileOutputStream;
+import com.backtype.support.KeywordArgParser;
+import com.backtype.support.Utils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -18,24 +17,16 @@ import org.apache.hadoop.io.compress.BZip2Codec;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.io.compress.GzipCodec;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.mapred.SequenceFileRecordReader;
+import org.apache.hadoop.mapred.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.backtype.hadoop.formats.RecordInputStream;
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.hadoop.formats.SequenceFileInputStream;
-import com.backtype.hadoop.formats.SequenceFileOutputStream;
-import com.backtype.support.KeywordArgParser;
-import com.backtype.support.Utils;
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SequenceFileFormat implements PailFormat {
     public static final String TYPE_ARG = "compressionType";
@@ -63,7 +54,7 @@ public class SequenceFileFormat implements PailFormat {
     private String _typeArg;
     private String _codecArg;
 
-    public SequenceFileFormat(Map<String, Object> args) {
+    public void configure(Map<String, Object> args) {
         args = new KeywordArgParser()
                 .add(TYPE_ARG, null, true, TYPE_ARG_RECORD, TYPE_ARG_BLOCK)
                 .add(CODEC_ARG, CODEC_ARG_DEFAULT, false, CODEC_ARG_DEFAULT, CODEC_ARG_GZIP, CODEC_ARG_BZIP2)
