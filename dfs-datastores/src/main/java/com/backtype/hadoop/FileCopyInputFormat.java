@@ -1,15 +1,5 @@
 package com.backtype.hadoop;
 
-import com.backtype.support.SubsetSum;
-import com.backtype.support.SubsetSum.Value;
-import com.backtype.support.Utils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.mapred.*;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -17,6 +7,21 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableUtils;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
+
+import com.backtype.support.SubsetSum;
+import com.backtype.support.SubsetSum.Value;
+import com.backtype.support.Utils;
 
 public class FileCopyInputFormat implements InputFormat<Text, Text> {
     public static final String ARGS = "file_copy_args";

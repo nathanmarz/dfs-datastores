@@ -1,10 +1,10 @@
 package com.backtype.hadoop.datastores;
 
-import com.backtype.hadoop.pail.PailStructure;
-import com.backtype.support.Utils;
-
 import java.util.Collections;
 import java.util.List;
+
+import com.backtype.hadoop.pail.PailStructure;
+import com.backtype.support.Utils;
 
 public abstract class TimeSliceStructure<T> implements PailStructure<T> {
 

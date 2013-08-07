@@ -1,11 +1,11 @@
 package com.backtype.hadoop.pail;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-
-import java.io.IOException;
 
 /*
  * This class exists to get around lack of syncing in Hadoop local filesystem. Collector uses this to create output streams

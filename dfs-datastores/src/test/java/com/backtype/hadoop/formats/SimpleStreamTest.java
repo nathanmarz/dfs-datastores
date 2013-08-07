@@ -1,12 +1,16 @@
 package com.backtype.hadoop.formats;
 
+import static com.backtype.support.TestUtils.assertArraysEqual;
+import static com.backtype.support.TestUtils.getTmpPath;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import static com.backtype.support.TestUtils.*;
 
 
 

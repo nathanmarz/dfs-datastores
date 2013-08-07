@@ -1,7 +1,7 @@
 package com.backtype.hadoop;
 
-import com.backtype.hadoop.FileCopyInputFormat.FileCopyArgs;
-import com.backtype.support.Utils;
+import java.io.IOException;
+
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -13,7 +13,8 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 
-import java.io.IOException;
+import com.backtype.hadoop.FileCopyInputFormat.FileCopyArgs;
+import com.backtype.support.Utils;
 
 public class BalancedDistcp {
     private static Thread shutdownHook;

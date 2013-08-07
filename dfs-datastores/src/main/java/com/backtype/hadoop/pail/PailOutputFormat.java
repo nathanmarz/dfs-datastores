@@ -1,21 +1,25 @@
 package com.backtype.hadoop.pail;
 
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.support.Utils;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.mapred.FileOutputCommitter;
+import org.apache.hadoop.mapred.FileOutputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordWriter;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.support.Utils;
 
 public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
     public static Logger LOG = LoggerFactory.getLogger(PailOutputFormat.class);

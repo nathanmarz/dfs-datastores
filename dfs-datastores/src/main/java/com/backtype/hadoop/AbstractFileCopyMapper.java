@@ -1,20 +1,26 @@
 package com.backtype.hadoop;
 
-import com.backtype.hadoop.FileCopyInputFormat.FileCopyArgs;
-import com.backtype.support.Utils;
+import java.io.IOException;
+import java.util.UUID;
+
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
-import org.apache.log4j.Logger;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.MapReduceBase;
+import org.apache.hadoop.mapred.Mapper;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Reporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.UUID;
+import com.backtype.hadoop.FileCopyInputFormat.FileCopyArgs;
+import com.backtype.support.Utils;
 
 public abstract class AbstractFileCopyMapper extends MapReduceBase implements Mapper<Text, Text, NullWritable, NullWritable> {
-    public static Logger LOG = Logger.getLogger(AbstractFileCopyMapper.class);
+    public static Logger LOG = LoggerFactory.getLogger(AbstractFileCopyMapper.class);
 
     private FileSystem fsSource;
     private FileSystem fsDest;

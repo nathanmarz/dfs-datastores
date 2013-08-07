@@ -1,9 +1,9 @@
 package com.backtype.hadoop.pail;
 
-import org.apache.hadoop.fs.Path;
-
 import java.io.IOException;
 import java.util.List;
+
+import org.apache.hadoop.fs.Path;
 
 
 public class AllPailPathLister implements PailPathLister {

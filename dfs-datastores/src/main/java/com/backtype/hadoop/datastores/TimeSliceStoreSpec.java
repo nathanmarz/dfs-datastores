@@ -1,9 +1,9 @@
 package com.backtype.hadoop.datastores;
 
-import com.backtype.hadoop.pail.PailSpec;
-
 import java.io.Serializable;
 import java.util.Map;
+
+import com.backtype.hadoop.pail.PailSpec;
 
 public class TimeSliceStoreSpec implements Serializable {
     private PailSpec _pailSpec;

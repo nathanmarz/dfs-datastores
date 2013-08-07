@@ -1,13 +1,14 @@
 package com.backtype.hadoop.pail;
 
-import com.backtype.support.Utils;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.JobConf;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobConf;
+
+import com.backtype.support.Utils;
 
 public class PailFormatFactory {
     public static final String SEQUENCE_FILE = "SequenceFile";

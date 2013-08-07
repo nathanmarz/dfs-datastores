@@ -38,7 +38,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.7</version>
 				<executions>
 					<execution>
 						<id>add-test-source</id>
@@ -126,15 +125,14 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 
-
 		<dependency>
 			<groupId>cascading</groupId>
 			<artifactId>cascading-bind</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 
 		<dependency>

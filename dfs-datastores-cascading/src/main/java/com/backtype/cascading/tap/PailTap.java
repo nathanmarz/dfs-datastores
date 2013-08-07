@@ -1,7 +1,6 @@
 package com.backtype.cascading.tap;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -12,7 +11,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cascading.flow.FlowProcess;
 import cascading.tap.TapException;
@@ -21,13 +21,12 @@ import cascading.tuple.hadoop.TupleSerialization;
 
 import com.backtype.hadoop.pail.Pail;
 import com.backtype.hadoop.pail.PailFormatFactory;
-import com.backtype.hadoop.pail.PailPathLister;
 import com.backtype.hadoop.pail.PailSpec;
 import com.backtype.hadoop.pail.PailStructure;
 import com.backtype.support.Utils;
 
 public class PailTap extends Hfs {
-    private static Logger LOG = Logger.getLogger(PailTap.class);
+    private static Logger LOG = LoggerFactory.getLogger(PailTap.class);
 
     public static PailSpec makeSpec(PailSpec given, PailStructure structure) {
         return (given == null) ? PailFormatFactory.getDefaultCopy().setStructure(structure) :

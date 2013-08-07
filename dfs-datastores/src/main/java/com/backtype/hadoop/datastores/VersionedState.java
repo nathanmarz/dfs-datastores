@@ -1,12 +1,14 @@
 package com.backtype.hadoop.datastores;
 
-import com.backtype.support.Utils;
-import java.util.Map;
-import java.util.HashMap;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
+
+import com.backtype.support.Utils;
 
 
 /**

@@ -1,8 +1,9 @@
 package com.backtype.hadoop.pail;
 
-import com.backtype.hadoop.formats.RecordInputStream;
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.hadoop.pail.Pail.TypedRecordOutputStream;
+import static com.backtype.support.TestUtils.assertArraysEqual;
+import static com.backtype.support.TestUtils.assertPailContents;
+import static com.backtype.support.TestUtils.deletePath;
+import static com.backtype.support.TestUtils.getTmpPath;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,11 +12,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import static com.backtype.support.TestUtils.*;
+
+import com.backtype.hadoop.formats.RecordInputStream;
+import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.hadoop.pail.Pail.TypedRecordOutputStream;
 
 
 public class PailTest extends TestCase {

@@ -1,16 +1,20 @@
 package com.backtype.support;
 
+import static com.backtype.support.TestUtils.assertArraysEqual;
+import static com.backtype.support.TestUtils.getTmpPath;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
-import static com.backtype.support.TestUtils.*;
 
 public class UtilsTest extends TestCase {
     public void testGetBytes() {

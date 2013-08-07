@@ -1,5 +1,16 @@
 package com.backtype.hadoop.pail;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -8,17 +19,9 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.yaml.snakeyaml.Yaml;
 
-import com.backtype.hadoop.pail.DefaultPailStructure;
-import com.backtype.hadoop.pail.PailSpec;
-import com.backtype.hadoop.pail.PailStructure;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class PailSpec implements Writable, Serializable {

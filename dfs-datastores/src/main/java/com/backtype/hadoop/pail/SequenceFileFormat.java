@@ -1,11 +1,12 @@
 package com.backtype.hadoop.pail;
 
-import com.backtype.hadoop.formats.RecordInputStream;
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.hadoop.formats.SequenceFileInputStream;
-import com.backtype.hadoop.formats.SequenceFileOutputStream;
-import com.backtype.support.KeywordArgParser;
-import com.backtype.support.Utils;
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -17,15 +18,24 @@ import org.apache.hadoop.io.compress.BZip2Codec;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.io.compress.GzipCodec;
-import org.apache.hadoop.mapred.*;
-import org.apache.log4j.Logger;
+import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hadoop.mapred.SequenceFileRecordReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.backtype.hadoop.formats.RecordInputStream;
+import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.hadoop.formats.SequenceFileInputStream;
+import com.backtype.hadoop.formats.SequenceFileOutputStream;
+import com.backtype.support.KeywordArgParser;
+import com.backtype.support.Utils;
 
 public class SequenceFileFormat implements PailFormat {
     public static final String TYPE_ARG = "compressionType";
@@ -82,7 +92,7 @@ public class SequenceFileFormat implements PailFormat {
 
 
     public static class SequenceFilePailRecordReader implements RecordReader<Text, BytesWritable> {
-        private static Logger LOG = Logger.getLogger(SequenceFilePailRecordReader.class);
+        private static Logger LOG = LoggerFactory.getLogger(SequenceFilePailRecordReader.class);
         public static final int NUM_TRIES = 10;
 
         JobConf conf;

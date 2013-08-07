@@ -1,16 +1,18 @@
 package com.backtype.hadoop.datastores;
 
-import com.backtype.hadoop.datastores.TimeSliceStore.Slice;
-import com.backtype.hadoop.pail.Pail.TypedRecordOutputStream;
-import com.backtype.support.FSTestCase;
-import com.backtype.support.Utils;
+import static com.backtype.support.TestUtils.getTmpPath;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import static com.backtype.support.TestUtils.*;
+
+import com.backtype.hadoop.datastores.TimeSliceStore.Slice;
+import com.backtype.hadoop.pail.Pail.TypedRecordOutputStream;
+import com.backtype.support.FSTestCase;
+import com.backtype.support.Utils;
 
 
 public class TimeSliceStoreTest extends FSTestCase {

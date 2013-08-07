@@ -1,6 +1,11 @@
 package com.backtype.support;
 
-import com.backtype.hadoop.datastores.VersionedStore;
+import java.io.IOException;
+
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobConf;
+
 import cascading.flow.Flow;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.operation.Identity;
@@ -8,11 +13,8 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.JobConf;
 
-import java.io.IOException;
+import com.backtype.hadoop.datastores.VersionedStore;
 
 
 public class CascadingUtils {

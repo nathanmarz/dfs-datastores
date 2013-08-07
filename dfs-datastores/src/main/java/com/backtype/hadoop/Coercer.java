@@ -1,10 +1,7 @@
 package com.backtype.hadoop;
 
-import com.backtype.hadoop.FileCopyInputFormat.FileCopyArgs;
-import com.backtype.hadoop.formats.RecordInputStream;
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.hadoop.formats.RecordStreamFactory;
-import com.backtype.support.Utils;
+import java.io.IOException;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
@@ -14,7 +11,11 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 
-import java.io.IOException;
+import com.backtype.hadoop.FileCopyInputFormat.FileCopyArgs;
+import com.backtype.hadoop.formats.RecordInputStream;
+import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.hadoop.formats.RecordStreamFactory;
+import com.backtype.support.Utils;
 
 
 public class Coercer {

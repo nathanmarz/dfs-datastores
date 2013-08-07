@@ -1,11 +1,13 @@
 package com.backtype.hadoop.pail;
 
-import com.backtype.support.Utils;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import static com.backtype.support.TestUtils.emitToPail;
+import static com.backtype.support.TestUtils.getTmpPath;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -17,7 +19,10 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import static com.backtype.support.TestUtils.*;
+
+import com.backtype.support.Utils;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 
 public abstract class PailFormatTester extends TestCase {

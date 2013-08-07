@@ -10,11 +10,12 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
-import com.backtype.hadoop.datastores.VersionedStore;
-import com.backtype.support.CascadingUtils;
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;
 import cascading.tap.hadoop.Hfs;
+
+import com.backtype.hadoop.datastores.VersionedStore;
+import com.backtype.support.CascadingUtils;
 
 public class VersionedTap extends Hfs {
   public static enum TapMode {SOURCE, SINK}

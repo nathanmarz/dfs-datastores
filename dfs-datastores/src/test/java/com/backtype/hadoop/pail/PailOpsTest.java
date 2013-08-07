@@ -1,10 +1,9 @@
 package com.backtype.hadoop.pail;
 
-import com.backtype.hadoop.RenameMode;
-import com.backtype.hadoop.formats.RecordInputStream;
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.support.FSTestCase;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import static com.backtype.support.TestUtils.assertPailContents;
+import static com.backtype.support.TestUtils.emitObjectsToPail;
+import static com.backtype.support.TestUtils.emitToPail;
+import static com.backtype.support.TestUtils.getTmpPath;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,8 +13,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.hadoop.fs.Path;
-import static com.backtype.support.TestUtils.*;
+
+import com.backtype.hadoop.RenameMode;
+import com.backtype.hadoop.formats.RecordInputStream;
+import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.support.FSTestCase;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class PailOpsTest extends FSTestCase {
     private void writeStrings(Pail pail, String userfile, String... strs) throws IOException {
