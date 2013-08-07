@@ -71,7 +71,7 @@ public abstract class AbstractFileCopyMapper extends MapReduceBase implements Ma
     public void configure(JobConf job) {
         FileCopyArgs args = (FileCopyArgs) Utils.getObject(job, FileCopyInputFormat.ARGS);
         try {
-            tmpRoot = args.tmpRoot;
+            tmpRoot = job.get("hadoop.tmp.dir") != null ? job.get("hadoop.tmp.dir") + Path.SEPARATOR + "filecopy" : args.tmpRoot;
             fsSource = new Path(args.source).getFileSystem(job);
             fsDest = new Path(args.dest).getFileSystem(job);
 
