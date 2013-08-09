@@ -153,7 +153,7 @@ public class PailScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
         Tuple selected = tupleEntry.selectTuple(_options.outputFields);
 
-        Object obj = (_options.outputFields.size() > 1) ? selected : selected.getObject(0);
+        Object obj = selected;
 
         String key;
         // a hack since byte[] isn't natively handled by hadoop
