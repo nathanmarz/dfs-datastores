@@ -17,6 +17,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -24,6 +25,9 @@ import java.util.Set;
 
 import static com.backtype.support.CascadingUtils.identityFlow;
 import static com.backtype.support.TestUtils.*;
+
+import static org.testng.Assert.*;
+
 
 
 public class PailTapTest extends FSTestCase {
@@ -41,6 +45,7 @@ public class PailTapTest extends FSTestCase {
 
     }
 
+    @Test
     public void testSimpleFlow() throws Exception {
         String pail = getTmpPath(fs, "pail");
         String sinkpath = getTmpPath(fs, "sink");
@@ -82,6 +87,7 @@ public class PailTapTest extends FSTestCase {
 
     }
 
+    @Test
     public void testGarbagePathCleanup() throws Exception {
         String sourcePath = getTmpPath(fs, "source");
         String sinkPath = getTmpPath(fs, "sink");
@@ -100,6 +106,7 @@ public class PailTapTest extends FSTestCase {
         assertFalse(fs.exists(new Path(sinkPath, "_temporary2")));
     }
 
+    @Test
     public void testWriteToExistingPail() throws Exception {
         String sourcePath = getTmpPath(fs, "source");
         String sinkPath = getTmpPath(fs, "sink");

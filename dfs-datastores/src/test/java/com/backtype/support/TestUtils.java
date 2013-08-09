@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.junit.Assert;
+import org.testng.Assert;
 
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
@@ -103,7 +103,7 @@ public class TestUtils {
         for(T obj: objects) {
             other.add(obj);
         }
-        Assert.assertEquals(failureString(other, contains), other, contains);
+        Assert.assertEquals(other, contains, failureString(other, contains));
     }
 
     public static String failureString(Iterable expected, Iterable got) {
@@ -128,7 +128,7 @@ public class TestUtils {
         for(Object o: contains) {
 
         }
-        Assert.assertEquals(failureString(other, contains), other, contains);
+        Assert.assertEquals(other, contains, failureString(other, contains));
     }
 
 

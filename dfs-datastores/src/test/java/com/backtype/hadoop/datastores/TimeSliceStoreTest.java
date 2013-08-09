@@ -9,11 +9,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.testng.annotations.Test;
+
 import com.backtype.hadoop.datastores.TimeSliceStore.Slice;
 import com.backtype.hadoop.pail.Pail.TypedRecordOutputStream;
 import com.backtype.support.FSTestCase;
 import com.backtype.support.Utils;
 
+import static org.testng.Assert.*;
 
 public class TimeSliceStoreTest extends FSTestCase {
 
@@ -44,6 +47,7 @@ public class TimeSliceStoreTest extends FSTestCase {
         s.finishSlice(slice);
     }
 
+    @Test
     public void testReadWrite() throws Exception {
         String tmp1 = getTmpPath(fs, "slices");
         TimeSliceStore<String> sliceStore = TimeSliceStore.create(fs, tmp1, new TimeSliceStringStructure());
@@ -160,6 +164,7 @@ public class TimeSliceStoreTest extends FSTestCase {
 
     }
 
+    @Test
     public void testCopyAppend() throws Exception {
         appendTester(new AppendOperation() {
             public void append(TimeSliceStore dest, TimeSliceStore source) throws IOException {
@@ -168,6 +173,7 @@ public class TimeSliceStoreTest extends FSTestCase {
         });
     }
 
+    @Test
     public void testMoveAppend() throws Exception {
         appendTester(new AppendOperation() {
             public void append(TimeSliceStore dest, TimeSliceStore source) throws IOException {
@@ -176,6 +182,7 @@ public class TimeSliceStoreTest extends FSTestCase {
         });
     }
 
+    @Test
     public void testAbsorb() throws Exception {
         appendTester(new AppendOperation() {
             public void append(TimeSliceStore dest, TimeSliceStore source) throws IOException {
@@ -184,6 +191,7 @@ public class TimeSliceStoreTest extends FSTestCase {
         });
     }
 
+    @Test
     public void testConsolidate() throws Exception {
         String tmp = getTmpPath(fs, "sliceStore");
 

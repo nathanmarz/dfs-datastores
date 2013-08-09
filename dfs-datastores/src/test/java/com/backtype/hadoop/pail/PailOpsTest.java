@@ -15,12 +15,15 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
+import org.testng.annotations.Test;
 
 import com.backtype.hadoop.RenameMode;
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.support.FSTestCase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import static org.testng.Assert.*;
 
 public class PailOpsTest extends FSTestCase {
     private void writeStrings(Pail pail, String userfile, String... strs) throws IOException {
@@ -43,6 +46,7 @@ public class PailOpsTest extends FSTestCase {
         return returned;
     }
 
+    @Test
     public void testDeleteSnapshot() throws IOException {
         String path = getTmpPath(local, "pail");
         String snap = getTmpPath(fs, "snapshot");
@@ -54,10 +58,11 @@ public class PailOpsTest extends FSTestCase {
         pail.deleteSnapshot(snapPail);
         assertPailContents(pail, "a1");
         List<String> names = pail.getUserFileNames();
-        assertEquals("aaa2", names.get(0));
-        assertEquals(1, names.size());
+        assertEquals(names.get(0), "aaa2");
+        assertEquals(names.size(), 1);
     }
 
+    @Test
     public void testClear() throws IOException {
         String path = getTmpPath(fs, "pail");
         Pail<String> pail = Pail.create(fs, path, PailFormatFactory.getDefaultCopy().setStructure(new TestStructure()));
@@ -79,6 +84,7 @@ public class PailOpsTest extends FSTestCase {
         assertPailContents(pail);
     }
 
+    @Test
     public void testConsolidationOne() throws Exception {
         String path = getTmpPath(local, "pail");
         Pail pail = Pail.create(local, path);
@@ -91,15 +97,16 @@ public class PailOpsTest extends FSTestCase {
         pail.writeMetadata("a/b/qqq", "lalala");
         pail.writeMetadata("f", "abc");
         pail.consolidate(null);
-        assertEquals(1, pail.getUserFileNames().size());
+        assertEquals(pail.getUserFileNames().size(), 1);
         Set<String> results = new HashSet<String>(readWithIt(pail));
         Set<String> expected = new HashSet<String>(Arrays.asList("a", "b", "c", "d", "e",
                 "1", "2", "3","aaa", "bbb", "ccc", "ddd", "eee", "fff","z", "zz", "zzz"));
         assertEquals(expected, results);
-        assertEquals("abc", pail.getMetadata("f"));
-        assertEquals("lalala", pail.getMetadata("a/b/qqq"));
+        assertEquals(pail.getMetadata("f"), "abc");
+        assertEquals(pail.getMetadata("a/b/qqq"), "lalala");
     }
 
+    @Test
     public void testConsolidationMany() throws Exception {
         String path = getTmpPath(local, "pail");
         Pail pail = Pail.create(local, path);
@@ -116,9 +123,10 @@ public class PailOpsTest extends FSTestCase {
         Set<String> results = new HashSet<String>(readWithIt(pail));
         Set<String> expected = new HashSet<String>(Arrays.asList("a", "b", "c", "d", "e",
                 "1", "2", "3","aaa", "bbb", "ccc", "ddd", "eee", "fff","z", "zz", "zzz"));
-        assertEquals(expected, results);
+        assertEquals(results, expected);
     }
 
+    @Test
     public void testConsolidateStructured() throws Exception {
         String path = getTmpPath(fs, "pail");
         Pail<String> pail = Pail.create(fs, path, PailFormatFactory.getDefaultCopy().setStructure(new TestStructure()));
@@ -149,6 +157,7 @@ public class PailOpsTest extends FSTestCase {
         public boolean canAppendDifferentFormats();
     }
 
+    
     private void basicAppendTest(AppendOperation op) throws Exception {
         String path1 = getTmpPath(fs, "pail");
         String path2 = getTmpPath(fs, "pail2");
@@ -164,6 +173,7 @@ public class PailOpsTest extends FSTestCase {
         assertPailContents(p1, "aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg", "hhh", "iii");
     }
 
+    
     private void renameAndStructureAppendTest(AppendOperation op, PailSpec spec1, PailSpec spec2) throws Exception {
         String path1 = getTmpPath(fs, "pail");
         String path2 = getTmpPath(fs, "pail2");
@@ -192,7 +202,7 @@ public class PailOpsTest extends FSTestCase {
         assertPailContents(p1, "a", "b", "c", "d", "e", "f", "g", "h");
         assertPailContents(p1.getSubPail("1"), "b", "c", "f", "h");
         Set<String> filenames = new HashSet<String>(p1.getUserFileNames());
-        assertEquals(8, filenames.size());
+        assertEquals(filenames.size(), 8);
         assertTrue(filenames.remove("file1"));
         assertTrue(filenames.remove("1/file1"));
         assertTrue(filenames.remove("1/2/file1"));
@@ -211,10 +221,11 @@ public class PailOpsTest extends FSTestCase {
         String s = new String(in.readRawRecord());
         assertTrue(in.readRawRecord()==null);
         in.close();
-        assertEquals("a", s);
+        assertEquals(s, "a");
 
     }
 
+    @Test(enabled=false)
     public void appendTypeCompatibilityTest(AppendOperation op) throws Exception {
         String path1 = getTmpPath(fs, "pail");
         String path2 = getTmpPath(fs, "pail2");
@@ -231,6 +242,7 @@ public class PailOpsTest extends FSTestCase {
         }
     }
 
+    @Test(enabled=false)
     public void structureProtectionTest(AppendOperation op) throws Exception {
         String path1 = getTmpPath(fs, "pail");
         String path2 = getTmpPath(fs, "pail2");
@@ -277,6 +289,7 @@ public class PailOpsTest extends FSTestCase {
         assertPailContents(p1.getSubPail("z/b"), "zb1");
     }
 
+    @Test(enabled=false)
     public void metadataConflictTest(AppendOperation op) throws IOException {
         String path1 = getTmpPath(fs, "pail");
         String path2 = getTmpPath(fs, "pail2");
@@ -297,8 +310,8 @@ public class PailOpsTest extends FSTestCase {
         op.append(p1, p2, args);
 
         assertPailContents(p1, "aaa", "bbb", "ccc");
-        assertEquals("M1", p1.getMetadata("file1"));
-        assertEquals("M2", p1.getMetadata("a/b"));
+        assertEquals(p1.getMetadata("file1"), "M1");
+        assertEquals(p1.getMetadata("a/b"), "M2");
         assertNull(p1.getMetadata("a/c"));
 
 
@@ -310,6 +323,7 @@ public class PailOpsTest extends FSTestCase {
         }
     }
 
+    @Test(enabled=false)
     public void metadataNonConflictTest(AppendOperation op) throws IOException {
         String path1 = getTmpPath(fs, "pail");
         String path2 = getTmpPath(fs, "pail2");
@@ -334,8 +348,8 @@ public class PailOpsTest extends FSTestCase {
         op.append(p1, p2, new CopyArgs());
 
         assertPailContents(p1, "aaa", "bbb");
-        assertEquals("M1", p1.getMetadata("meta1"));
-        assertEquals("M2", p1.getMetadata("a/b/meta2"));
+        assertEquals(p1.getMetadata("meta1"), "M1");
+        assertEquals(p1.getMetadata("a/b/meta2"), "M2");
 
 
         if(op.canAppendDifferentFormats()) {
@@ -343,13 +357,13 @@ public class PailOpsTest extends FSTestCase {
             op.append(p1, p3, new CopyArgs());
 
             assertPailContents(p1, "aaa", "bbb", "ccc");
-            assertEquals("M1", p1.getMetadata("meta1"));
-            assertEquals("M2", p1.getMetadata("a/b/meta2"));
-            assertEquals("M3", p1.getMetadata("meta3"));
+            assertEquals(p1.getMetadata("meta1"), "M1");
+            assertEquals(p1.getMetadata("a/b/meta2"), "M2");
+            assertEquals(p1.getMetadata("meta3"), "M3");
         }
     }
 
-
+    @Test(enabled=false)
     public void appendOperationTest(AppendOperation op) throws Exception {
         basicAppendTest(op);
         if(op.canAppendDifferentFormats())
@@ -366,6 +380,7 @@ public class PailOpsTest extends FSTestCase {
         metadataNonConflictTest(op);
     }
 
+    @Test
     public void testCopyAppend() throws Exception {
         appendOperationTest(new AppendOperation() {
             public void append(Pail into, Pail data, int renameMode) throws IOException {
@@ -382,6 +397,7 @@ public class PailOpsTest extends FSTestCase {
         });
     }
 
+    @Test
     public void testMoveAppend() throws Exception {
         appendOperationTest(new AppendOperation() {
             public void append(Pail into, Pail data, int renameMode) throws IOException {
@@ -400,6 +416,7 @@ public class PailOpsTest extends FSTestCase {
         //TODO: test that original pail is now empty
     }
 
+    @Test
     public void testAbsorb() throws Exception {
         appendOperationTest(new AppendOperation() {
             public void append(Pail into, Pail data, int renameMode) throws IOException {
