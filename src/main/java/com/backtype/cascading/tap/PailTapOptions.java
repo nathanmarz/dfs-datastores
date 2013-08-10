@@ -27,6 +27,10 @@ public class PailTapOptions implements Serializable {
     public PailPathLister getLister() {
         return lister;
     }
+    
+    public boolean getUseTuple() {
+    	return useTuple;
+    }
 
     PailSpec spec = null;
     Fields outputFields = new Fields( "bytes" );
