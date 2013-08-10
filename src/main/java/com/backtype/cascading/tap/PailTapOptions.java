@@ -29,9 +29,10 @@ public class PailTapOptions implements Serializable {
     }
 
     PailSpec spec = null;
-    Fields outputFields = new Fields( "bytes");
+    Fields outputFields = new Fields( "bytes" );
     List<String>[] attrs = null;
     PailPathLister lister = null;
+    boolean useTuple = false;
 
     public PailTapOptions() {
 
@@ -44,6 +45,11 @@ public class PailTapOptions implements Serializable {
 
     public PailTapOptions outputFields(Fields outputFields) {
         this.outputFields = outputFields;
+        return this;
+    }
+    
+    public PailTapOptions useTuple(boolean useTuple) {
+        this.useTuple = true;
         return this;
     }
 

@@ -137,7 +137,7 @@ public class PailScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
         String relPath = ((Text) k).toString();
 
         Object value = deserialize((BytesWritable) v);
-        if (_options.outputFields.size() > 1 && value instanceof Tuple) {
+        if (_options.useTuple  && value instanceof Tuple) {
             sourceCall.getIncomingEntry().setTuple(new Tuple(relPath).append((Tuple) value));
         } else {
             sourceCall.getIncomingEntry().setTuple(new Tuple(relPath, value));
@@ -153,7 +153,7 @@ public class PailScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
 
         Tuple selected = tupleEntry.selectTuple(_options.outputFields);
 
-        Object obj = (_options.outputFields.size() > 1) ? selected : selected.getObject(0);
+        Object obj = (_options.useTuple) ? selected : selected.getObject(0);
 
         String key;
         // a hack since byte[] isn't natively handled by hadoop
