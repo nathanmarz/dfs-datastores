@@ -1,6 +1,9 @@
 package com.backtype.hadoop.mapreduce;
 
+import com.backtype.hadoop.mapreduce.io.PailOutputFormat;
+import com.backtype.hadoop.pail.PailSpec;
 import com.backtype.hadoop.pail.PailStructure;
+import com.backtype.support.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -13,7 +16,8 @@ public abstract class PailMapper<T, KEYOUT, VALUEOUT> extends Mapper<Text, Bytes
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
-        pailStructure = getPailStructure();
+        PailSpec pailSpec = (PailSpec)Utils.getObject(context.getConfiguration(), PailOutputFormat.SPEC_ARG);
+        pailStructure = pailSpec.getStructure();
     }
 
     @Override
@@ -22,9 +26,4 @@ public abstract class PailMapper<T, KEYOUT, VALUEOUT> extends Mapper<Text, Bytes
     }
 
     protected abstract void processRecord(Text key, T value, Context context) throws IOException, InterruptedException;
-
-    /**
-     * We need a PailStructure Implementation to de-serialize the records
-     */
-    protected abstract PailStructure<T> getPailStructure();
 }
