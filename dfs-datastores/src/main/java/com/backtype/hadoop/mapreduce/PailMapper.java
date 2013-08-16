@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public abstract class PailMapper<T, KEYOUT, VALUEOUT> extends Mapper<Text, BytesWritable, KEYOUT, VALUEOUT> {
 
-    private PailStructure<T> pailStructure;
+    protected PailStructure<T> pailStructure;
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
