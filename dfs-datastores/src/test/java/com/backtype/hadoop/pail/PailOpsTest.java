@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.hadoop.fs.Path;
+import org.junit.Ignore;
 import static com.backtype.support.TestUtils.*;
 
 public class PailOpsTest extends FSTestCase {
@@ -393,6 +394,7 @@ public class PailOpsTest extends FSTestCase {
         //TODO: test that original pail is now empty
     }
 
+    @Ignore
     public void testAbsorb() throws Exception {
         appendOperationTest(new AppendOperation() {
             public void append(Pail into, Pail data, int renameMode) throws IOException {
