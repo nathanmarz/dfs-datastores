@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 
 public class VersionedStore {
-    private static final String FINISHED_VERSION_SUFFIX = ".version";
+    public static final String FINISHED_VERSION_SUFFIX = ".version";
     public static final String HADOOP_SUCCESS_FLAG = "_SUCCESS";
 
     private String root;
@@ -164,11 +164,16 @@ public class VersionedStore {
                     }
                 } else {
                     if (!p.getName().startsWith("_")) {
-                        if (p.getName().endsWith(FINISHED_VERSION_SUFFIX)) {
-                            ret.add(validateAndGetVersion(p.toString()));
-                        } else if (status != null && status.isDir() && getFileSystem().exists(new Path(p, HADOOP_SUCCESS_FLAG))) {
-                            // FORCE the _SUCCESS flag into the versioned store directory.
-                            ret.add(validateAndGetVersion(p.toString() + FINISHED_VERSION_SUFFIX));
+                        try {
+                            if (p.getName().endsWith(FINISHED_VERSION_SUFFIX)) {
+                                ret.add(validateAndGetVersion(p.toString()));
+                            } else if (status != null && status.isDir() && getFileSystem().exists(new Path(p, HADOOP_SUCCESS_FLAG))) {
+                                // FORCE the _SUCCESS flag into the versioned store directory.
+                                ret.add(validateAndGetVersion(p.toString() + FINISHED_VERSION_SUFFIX));
+                            }
+                        } catch (RuntimeException e) {
+                            // Skip this version
+                            continue;
                         }
                     }
                 }
