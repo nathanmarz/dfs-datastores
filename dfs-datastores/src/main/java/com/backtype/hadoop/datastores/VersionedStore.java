@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 
 public class VersionedStore {
-    private static final String FINISHED_VERSION_SUFFIX = ".version";
+    public static final String FINISHED_VERSION_SUFFIX = ".version";
     public static final String HADOOP_SUCCESS_FLAG = "_SUCCESS";
 
     private String root;
@@ -108,8 +108,10 @@ public class VersionedStore {
     }
 
     public void deleteVersion(long version) throws IOException {
-        fs.delete(new Path(versionPath(version)), true);
+        // Be sure to delete success indicators before data
         fs.delete(new Path(tokenPath(version)), false);
+        fs.delete(new Path(successFlagPath(version)), false);
+        fs.delete(new Path(versionPath(version)), true);
     }
 
     public void succeedVersion(String path) throws IOException {
@@ -121,20 +123,22 @@ public class VersionedStore {
     }
 
     public void cleanup() throws IOException {
+        // Default behavior is to clean up NOTHING
         cleanup(-1);
     }
 
     public void cleanup(int versionsToKeep) throws IOException {
-        List<Long> versions = getAllVersions();
+        final List<Long> versions = getAllVersions();
+        final HashSet<Long> keepers;
         if(versionsToKeep >= 0) {
-            versions = versions.subList(0, Math.min(versions.size(), versionsToKeep));
+            keepers = new HashSet<Long>(versions.subList(0, Math.min(versions.size(), versionsToKeep)));
+        } else {
+            keepers = new HashSet<Long>(versions);
         }
-        HashSet<Long> keepers = new HashSet<Long>(versions);
 
-        for(Path p: listDir(root)) {
-            Long v = parseVersion(p.toString());
+        for(Long v : versions) {
             if(v!=null && !keepers.contains(v)) {
-                fs.delete(p, true);
+                    deleteVersion(v);
             }
         }
     }
@@ -159,11 +163,18 @@ public class VersionedStore {
                         ret.add(Long.valueOf(p.getName()));
                     }
                 } else {
-                    if (p.getName().endsWith(FINISHED_VERSION_SUFFIX)) {
-                        ret.add(validateAndGetVersion(p.toString()));
-                    } else if (status != null && status.isDir() && getFileSystem().exists(new Path(p, HADOOP_SUCCESS_FLAG))) {
-                        // FORCE the _SUCCESS flag into the versioned store directory.
-                        ret.add(validateAndGetVersion(p.toString() + FINISHED_VERSION_SUFFIX));
+                    if (!p.getName().startsWith("_")) {
+                        try {
+                            if (p.getName().endsWith(FINISHED_VERSION_SUFFIX)) {
+                                ret.add(validateAndGetVersion(p.toString()));
+                            } else if (status != null && status.isDir() && getFileSystem().exists(new Path(p, HADOOP_SUCCESS_FLAG))) {
+                                // FORCE the _SUCCESS flag into the versioned store directory.
+                                ret.add(validateAndGetVersion(p.toString() + FINISHED_VERSION_SUFFIX));
+                            }
+                        } catch (RuntimeException e) {
+                            // Skip this version
+                            continue;
+                        }
                     }
                 }
             }
@@ -181,16 +192,32 @@ public class VersionedStore {
         return new Path(root, "" + version + FINISHED_VERSION_SUFFIX).toString();
     }
 
+    /** The path to the hadoop-created success flag file which may or may not exist */
+    private String successFlagPath(long version) {
+        return new Path(versionPath(version), HADOOP_SUCCESS_FLAG).toString();
+    }
+
     private Path normalizePath(String p) {
         return new Path(p).makeQualified(fs);
     }
 
     private long validateAndGetVersion(String path) {
+        Path parent = new Path(path).getParent();
         if(!normalizePath(path).getParent().equals(normalizePath(root))) {
-            throw new RuntimeException(path + " " + new Path(path).getParent() + " is not part of the versioned store located at " + root);
+            throw new RuntimeException(path + " " + parent + " is not part of the versioned store located at " + root);
         }
         Long v = parseVersion(path);
-        if(v==null) throw new RuntimeException(path + " is not a valid version");
+        if (v==null) throw new RuntimeException(path + " is not a valid version");
+
+        // Check that versioned folder exists
+        Path versionPath = new Path(parent, v.toString());
+        try {
+            FileStatus status = getFileSystem().getFileStatus(versionPath);
+            if (status == null || !status.isDir()) throw new RuntimeException(versionPath + " is not a valid version subfolder");
+        } catch (IOException e) {
+            throw new RuntimeException("could not stat path: " + versionPath);
+        }
+
         return v;
     }
 
