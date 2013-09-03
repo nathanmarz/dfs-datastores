@@ -53,7 +53,7 @@ public class PailTapOptions implements Serializable {
     }
     
     public PailTapOptions useTuple(boolean useTuple) {
-        this.useTuple = true;
+        this.useTuple = useTuple;
         return this;
     }
 
