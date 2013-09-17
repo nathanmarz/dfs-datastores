@@ -67,7 +67,11 @@ public class VersionedTap extends Hfs {
     VersionedStore store;
     try {
       store = getStore(conf);
-      return (version != null) ? store.versionPath(version) : store.mostRecentVersionPath();
+      String sourcePath = (version != null) ? store.versionPath(version) : store.mostRecentVersionPath();
+      if (sourcePath == null) {
+        throw new RuntimeException("Could not find valid source path for VersionTap with root: " + store.getRoot());
+      }
+      return sourcePath;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -76,7 +80,11 @@ public class VersionedTap extends Hfs {
   public String getSinkPath(JobConf conf) {
     try {
       VersionedStore store = getStore(conf);
-      return version == null ? store.createVersion() : store.createVersion(version);
+      String sinkPath = (version == null) ? store.createVersion() : store.createVersion(version);
+      if (sinkPath == null) {
+        throw new RuntimeException("Could not find valid sink path for VersionTap with root: " + store.getRoot());
+      }
+      return sinkPath;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
