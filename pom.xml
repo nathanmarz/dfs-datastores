@@ -9,10 +9,10 @@
 	<parent>
 		<groupId>com.rincaro</groupId>
 		<artifactId>rincaro-parent</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0.1</version>
 	</parent>
 
-	<version>2.0-SNAPSHOT</version>
+	<version>2.0.0</version>
 
 	<dependencies>
 
