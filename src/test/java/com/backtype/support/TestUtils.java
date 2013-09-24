@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -17,7 +18,7 @@ import com.google.common.collect.TreeMultiset;
 
 public class TestUtils {
 
-    private static final String TMP_ROOT = "/tmp/unittests";
+    private static final String TMP_ROOT = "/tmp/unittests/"+UUID.randomUUID().toString();
 
     public static void assertArraysEqual(byte[] expected, byte[] result) {
         if (!Arrays.equals(expected, result)) {
