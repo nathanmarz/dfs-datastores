@@ -1,18 +1,29 @@
 package com.backtype.hadoop.pail;
 
-import com.backtype.hadoop.*;
-import com.backtype.hadoop.formats.RecordInputStream;
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.support.Utils;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
+import com.backtype.hadoop.BalancedDistcp;
+import com.backtype.hadoop.Coercer;
+import com.backtype.hadoop.Consolidator;
+import com.backtype.hadoop.PathLister;
+import com.backtype.hadoop.RenameMode;
+import com.backtype.hadoop.formats.RecordInputStream;
+import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.support.Utils;
 
 public class Pail<T> extends AbstractPail implements Iterable<T>{
     public static Logger LOG = LoggerFactory.getLogger(Pail.class);
@@ -212,6 +223,10 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
 
     public Pail(String path) throws IOException {
         this(Utils.getFS(path), path);
+    }
+
+    public Pail(String path, Configuration conf) throws IOException {
+        this(Utils.getFS(path, conf), path);
     }
 
     public Pail(FileSystem fs, String path) throws IOException {
