@@ -329,6 +329,18 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         return mine.getName().equals(other.getName()) && mine.getArgs().equals(other.getArgs());
     }
 
+    public Pail snapshot(Configuration configuration, FileSystem fileSystem, String path) throws IOException {
+        Pail ret = createEmptyMimic(fileSystem, path);
+        ret.copyAppend(this, RenameMode.NO_RENAME, configuration);
+        return ret;
+    }
+
+    public Pail snapshot(FileSystem fileSystem, String path) throws IOException {
+        Pail ret = createEmptyMimic(fileSystem, path);
+        ret.copyAppend(this, RenameMode.NO_RENAME);
+        return ret;
+    }
+
     public Pail snapshot(String path) throws IOException {
         Pail ret = createEmptyMimic(path);
         ret.copyAppend(this, RenameMode.NO_RENAME);
@@ -347,15 +359,18 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         }
     }
 
-    public Pail createEmptyMimic(String path) throws IOException {
-        FileSystem otherFs = Utils.getFS(path);
-        if(getSpec(otherFs, new Path(path))!=null) {
+    public Pail createEmptyMimic(FileSystem fileSystem, String path) throws IOException {
+        if(getSpec(fileSystem, new Path(path))!=null) {
             throw new IllegalArgumentException("Cannot make empty mimic at " + path + " because it is a subdir of a pail");
         }
-        if(otherFs.exists(new Path(path))) {
+        if(fileSystem.exists(new Path(path))) {
             throw new IllegalArgumentException(path + " already exists");
         }
-        return Pail.create(otherFs, path, getSpec(), true);
+        return Pail.create(fileSystem, path, getSpec(), true);
+    }
+
+    public Pail createEmptyMimic(String path) throws IOException {
+        return createEmptyMimic(Utils.getFS(path), path);
     }
 
     public void coerce(String path, String name, Map<String, Object> args) throws IOException {
@@ -377,6 +392,12 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         copyAppend(p, args);
     }
 
+    public void copyAppend(Pail p, int renameMode, Configuration configuration) throws IOException {
+        CopyArgs args = new CopyArgs();
+        args.renameMode = renameMode;
+        args.configuration = configuration;
+        copyAppend(p, args);
+    }
 
     protected String getQualifiedRoot(Pail p) {
         Path path = new Path(p.getInstanceRoot());
@@ -395,9 +416,9 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         String sourceQual = getQualifiedRoot(p);
         String destQual = getQualifiedRoot(this);
         if(formatsSame) {
-            BalancedDistcp.distcp(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), EXTENSION);
+            BalancedDistcp.distcp(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), EXTENSION, args.configuration);
         } else {
-            Coercer.coerce(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), p.getFormat(), getFormat(), EXTENSION);
+            Coercer.coerce(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), p.getFormat(), getFormat(), EXTENSION, args.configuration);
         }
     }
 
@@ -451,6 +472,12 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
     public void absorb(Pail p, int renameMode) throws IOException {
         CopyArgs args = new CopyArgs();
         args.renameMode = renameMode;
+        absorb(p, args);
+    }
+
+    public void absorb(Pail p, Configuration configuration) throws IOException {
+        CopyArgs args = new CopyArgs();
+        args.configuration = configuration;
         absorb(p, args);
     }
 
