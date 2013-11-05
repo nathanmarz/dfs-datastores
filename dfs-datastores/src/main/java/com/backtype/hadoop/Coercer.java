@@ -5,7 +5,6 @@ import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.hadoop.formats.RecordStreamFactory;
 import com.backtype.support.Utils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
@@ -30,17 +29,12 @@ public class Coercer {
     }
 
     public static void coerce(String qualSource, String qualDest, int renameMode, PathLister lister, RecordStreamFactory factin, RecordStreamFactory factout, String extensionOnRename) throws IOException {
-        coerce(qualSource, qualDest, renameMode, lister, factin, factout, extensionOnRename, new Configuration());
-    }
-
-
-    public static void coerce(String qualSource, String qualDest, int renameMode, PathLister lister, RecordStreamFactory factin, RecordStreamFactory factout, String extensionOnRename, Configuration configuration) throws IOException {
         if(!Utils.hasScheme(qualSource) || !Utils.hasScheme(qualDest))
             throw new IllegalArgumentException("source and dest must have schemes " + qualSource + " " + qualDest);
 
 
         FileCopyArgs args = new FileCopyArgs(qualSource, qualDest, renameMode, lister, extensionOnRename);
-        JobConf conf = new JobConf(configuration, Coercer.class);
+        JobConf conf = new JobConf(Coercer.class);
         Utils.setObject(conf, FileCopyInputFormat.ARGS, args);
         Utils.setObject(conf, FACTIN_ARG, factin);
         Utils.setObject(conf, FACTOUT_ARG, factout);

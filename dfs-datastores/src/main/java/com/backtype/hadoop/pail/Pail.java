@@ -4,7 +4,6 @@ import com.backtype.hadoop.*;
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.support.Utils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -315,12 +314,6 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         return mine.getName().equals(other.getName()) && mine.getArgs().equals(other.getArgs());
     }
 
-    public Pail snapshot(Configuration configuration, FileSystem fileSystem, String path) throws IOException {
-        Pail ret = createEmptyMimic(fileSystem, path);
-        ret.copyAppend(this, RenameMode.NO_RENAME, configuration);
-        return ret;
-    }
-
     public Pail snapshot(FileSystem fileSystem, String path) throws IOException {
         Pail ret = createEmptyMimic(fileSystem, path);
         ret.copyAppend(this, RenameMode.NO_RENAME);
@@ -378,12 +371,6 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         copyAppend(p, args);
     }
 
-    public void copyAppend(Pail p, int renameMode, Configuration configuration) throws IOException {
-        CopyArgs args = new CopyArgs();
-        args.renameMode = renameMode;
-        args.configuration = configuration;
-        copyAppend(p, args);
-    }
 
     protected String getQualifiedRoot(Pail p) {
         Path path = new Path(p.getInstanceRoot());
@@ -402,9 +389,9 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         String sourceQual = getQualifiedRoot(p);
         String destQual = getQualifiedRoot(this);
         if(formatsSame) {
-            BalancedDistcp.distcp(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), EXTENSION, args.configuration);
+            BalancedDistcp.distcp(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), EXTENSION);
         } else {
-            Coercer.coerce(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), p.getFormat(), getFormat(), EXTENSION, args.configuration);
+            Coercer.coerce(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), p.getFormat(), getFormat(), EXTENSION);
         }
     }
 
@@ -458,12 +445,6 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
     public void absorb(Pail p, int renameMode) throws IOException {
         CopyArgs args = new CopyArgs();
         args.renameMode = renameMode;
-        absorb(p, args);
-    }
-
-    public void absorb(Pail p, Configuration configuration) throws IOException {
-        CopyArgs args = new CopyArgs();
-        args.configuration = configuration;
         absorb(p, args);
     }
 
