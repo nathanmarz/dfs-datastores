@@ -2,6 +2,7 @@ package com.backtype.hadoop;
 
 import com.backtype.hadoop.FileCopyInputFormat.FileCopyArgs;
 import com.backtype.support.Utils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -28,11 +29,20 @@ public class BalancedDistcp {
         distcp(args);
     }
 
+    public static void distcp(String qualSource, String qualDest, int renameMode, PathLister lister, String extensionOnRename, Configuration configuration) throws IOException {
+        FileCopyArgs args = new FileCopyArgs(qualSource, qualDest, renameMode, lister, extensionOnRename);
+        distcp(args, configuration);
+    }
+
     public static void distcp(FileCopyArgs args) throws IOException {
+        distcp(args, new Configuration());
+    }
+
+    public static void distcp(FileCopyArgs args, Configuration configuration) throws IOException {
         if(!Utils.hasScheme(args.source) || !Utils.hasScheme(args.dest))
             throw new IllegalArgumentException("source and dest must have schemes " + args.source + " " + args.dest);
 
-        JobConf conf = new JobConf(BalancedDistcp.class);
+        JobConf conf = new JobConf(configuration, BalancedDistcp.class);
         Utils.setObject(conf, FileCopyInputFormat.ARGS, args);
 
         conf.setJobName("BalancedDistcp: " + args.source + " -> " + args.dest);

@@ -117,7 +117,7 @@ public class PailTap extends Hfs {
         Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
       Pail p;
       try {
-        p = new Pail(_pailRoot); //make sure it exists
+        p = new Pail(_pailRoot, conf); //make sure it exists
       } catch (IOException e) {
         throw new TapException(e);
       }
@@ -229,7 +229,7 @@ public class PailTap extends Hfs {
     try {
       Path root = getQualifiedPath(conf);
       if (_options.attrs != null && _options.attrs.length > 0) {
-        Pail pail = new Pail(_pailRoot);
+        Pail pail = new Pail(_pailRoot, conf);
         for (List<String> attr : _options.attrs) {
           String rel = Utils.join(attr, "/");
           pail.getSubPail(rel); //ensure the path exists
