@@ -44,7 +44,8 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             PailStructure<T> structure = ((PailStructure<T>) _structure);
             if (obj != null && !structure.getType().isInstance(obj)) {
                 throw new IllegalArgumentException("Cannot write object " + obj + " of invalid type (class: " +
-                        obj.getClass().getCanonicalName() + ") to pail: " + Pail.this);
+                        obj.getClass().getCanonicalName() + ") to pail: " + Pail.this + "; should be of type: " +
+                        structure.getType().getCanonicalName());
             }
             List<String> rootAttrs = structure.getTarget(obj);
             List<String> attrs = makeRelative(rootAttrs);
