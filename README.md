@@ -10,6 +10,6 @@ to include dfs-datastores in your project, add the following to project.clj:
 
 To run the tests:
 
-```scala
-sbt test
+```clojure
+lein do sub install, sub junit
 ```
