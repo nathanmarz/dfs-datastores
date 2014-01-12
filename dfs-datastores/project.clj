@@ -9,10 +9,10 @@
   :dependencies [[org.slf4j/slf4j-api "1.6.6"]
                  [jvyaml/jvyaml "1.0.0"]
                  [com.google.guava/guava "13.0"]]
-  :deploy-repositories [["releases" {:url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                                     :creds :gpg}
-                         "snapshots" {:url "https://oss.sonatype.org/content/repositories/snapshots/"
-                                      :creds :gpg}]]
+  :deploy-repositories {"releases" {:url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                                    :creds :gpg}
+                        "snapshots" {:url "https://oss.sonatype.org/content/repositories/snapshots"
+                                     :creds :gpg}}
   :scm {:url "git@github.com:nathanmarz/dfs-datastores.git"}
   :pom-addition [:developers
                  [:developer
