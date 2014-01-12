@@ -25,7 +25,7 @@
                   [:url "http://twitter.com/sorenmacbeth"]]
                  [:developer
                   [:name "Sam Ritchie"]
-                  [:url "http://twitter.com/sritchie"]]]dddddd
+                  [:url "http://twitter.com/sritchie"]]]
   :javac-options ["-source" "1.6" "-target" "1.6"]
   :java-source-paths ["src/main/java" "src/test/java"]
   :junit ["src/test/java"]
