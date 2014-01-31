@@ -1,14 +1,9 @@
 package com.backtype.hadoop.pail;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import com.backtype.hadoop.*;
+import com.backtype.hadoop.formats.RecordInputStream;
+import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.support.Utils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -16,14 +11,9 @@ import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.backtype.hadoop.BalancedDistcp;
-import com.backtype.hadoop.Coercer;
-import com.backtype.hadoop.Consolidator;
-import com.backtype.hadoop.PathLister;
-import com.backtype.hadoop.RenameMode;
-import com.backtype.hadoop.formats.RecordInputStream;
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.support.Utils;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 public class Pail<T> extends AbstractPail implements Iterable<T>{
     public static Logger LOG = LoggerFactory.getLogger(Pail.class);
@@ -510,6 +500,10 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
     }
 
     public void consolidate(long maxSize) throws IOException {
+        consolidate(maxSize, Consolidator.DEFAULT_WORKING_DIR);
+    }
+
+    public void consolidate(long maxSize, String workingDir) throws IOException {
         List<String> toCheck = new ArrayList<String>();
         toCheck.add("");
         PailStructure structure = getSpec().getStructure();
@@ -535,8 +529,9 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             }
         }
 
-        Consolidator.consolidate(_fs, _format, new PailPathLister(false), consolidatedirs, maxSize, EXTENSION);
+        Consolidator.consolidate(_fs, _format, new PailPathLister(false), consolidatedirs, maxSize, EXTENSION, workingDir);
     }
+
 
     @Override
     protected RecordInputStream createInputStream(Path path) throws IOException {
