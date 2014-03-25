@@ -13,7 +13,7 @@
                                     :creds :gpg}
                         "snapshots" {:url "https://oss.sonatype.org/content/repositories/snapshots"
                                      :creds :gpg}}
-  :scm {:url "git@github.com:nathanmarz/dfs-datastores.git"}
+  :scm {:dir ".."}
   :pom-addition [:developers
                  [:developer
                   [:name "Nathan Marz"]
