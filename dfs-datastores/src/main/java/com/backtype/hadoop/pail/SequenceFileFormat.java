@@ -210,8 +210,8 @@ public class SequenceFileFormat implements PailFormat {
             return new CombineFileRecordReader(jobConf, (CombineFileSplit) inputSplit, reporter, (Class) SequenceFilePailRecordReader.class);
         }
 
-
-        @Override
+        // @Override
+        // in certains versions of hadoop this method is the one that is called by CombineFileRecordReader
         protected List<FileStatus> listStatus(org.apache.hadoop.mapreduce.JobContext job) throws IOException {
             return internalListStatus(new JobConf(job.getConfiguration()));
         }
