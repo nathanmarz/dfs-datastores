@@ -65,7 +65,7 @@ public abstract class PailFormatTester extends TestCase {
         JobConf conf = new JobConf();
         FileInputFormat.addInputPath(conf, new Path(path));
         InputSplit[] splits = informat.getSplits(conf, 10000);
-        assertTrue(splits.length == 1); //want only one split fro all three files
+        assertTrue(splits.length == 1); //want only one split for all three files
         for(InputSplit split: splits) {
             RecordReader<Text, BytesWritable> rr = informat.getRecordReader(split, conf, Reporter.NULL);
             Text t = new Text();

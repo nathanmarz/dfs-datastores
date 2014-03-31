@@ -199,22 +199,19 @@ public class SequenceFileFormat implements PailFormat {
     }
 
     public static class SequenceFilePailInputFormat extends CombineFileInputFormat<Text, BytesWritable> {
-        private static Logger LOG = LoggerFactory.getLogger(SequenceFilePailRecordReader.class);
 
         @Override
         public RecordReader<Text, BytesWritable> getRecordReader(InputSplit inputSplit, JobConf jobConf, Reporter reporter) throws IOException {
-            LOG.info("FileStatuses");
-            for(FileStatus fs: listStatus(jobConf)) {
-                LOG.info(fs.toString());
-            }
             return new CombineFileRecordReader(jobConf, (CombineFileSplit) inputSplit, reporter, (Class) SequenceFilePailRecordReader.class);
         }
 
-        // @Override
-        // in certains versions of hadoop this method is the one that is called by CombineFileRecordReader
-        protected List<FileStatus> listStatus(org.apache.hadoop.mapreduce.JobContext job) throws IOException {
-            return internalListStatus(new JobConf(job.getConfiguration()));
-        }
+
+        // In certain versions of hadoop this method is the one that is called by CombineFileRecordReader. But the
+        // method is incompatible with the one that is in the hadoop version that dfs-datastore uses
+//      @Override
+//      protected List<FileStatus> listStatus(org.apache.hadoop.mapreduce.JobContext job) throws IOException {
+//          return internalListStatus(new JobConf(job.getConfiguration()));
+//      }
 
         @Override
         protected FileStatus[] listStatus(JobConf conf) throws IOException {
