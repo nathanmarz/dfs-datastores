@@ -31,4 +31,4 @@
              {:dependencies [[org.slf4j/slf4j-log4j12 "1.6.6"]]
               :plugins [[lein-junit "1.1.5"]]}
              :provided
-             {:dependencies [[org.apache.hadoop/hadoop-core "1.0.3"]]}})
+             {:dependencies [[org.apache.hadoop/hadoop-mapreduce-client-core "2.0.5-alpha"][org.apache.hadoop/hadoop-common "2.0.5-alpha"]]}})
