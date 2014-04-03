@@ -8,14 +8,17 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[com.backtype/dfs-datastores ~VERSION]
                  [org.slf4j/slf4j-log4j12 "1.6.6"]
-                 [cascading/cascading-hadoop "2.5.1"
+                 [cascading/cascading-hadoop "2.5.3"
                   :exclusions [org.apache.hadoop/hadoop-core]]]
   :repositories {"conjars" "http://conjars.org/repo"}
   :deploy-repositories {"releases" {:url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
                                     :creds :gpg}
                         "snapshots" {:url "https://oss.sonatype.org/content/repositories/snapshots"
                                      :creds :gpg}}
-  :scm {:dir ".."}
+  :scm {:connection "scm:git:git://github.com/nathanmarz/dfs-datastores.git"
+        :developerConnection "scm:git:ssh://git@github.com/nathanmarz/dfs-datastores.git"
+        :url "https://github.com/nathanmarz/dfs-datastores"
+        :dir ".."}
   :pom-addition [:developers
                  [:developer
                   [:name "Nathan Marz"]
@@ -32,7 +35,7 @@
   :profiles {:dev
              {:plugins [[lein-junit "1.1.5"]]}
              :provided
-             {:dependencies [[org.apache.hadoop/hadoop-core "1.0.3"]]}}
+             {:dependencies [[org.apache.hadoop/hadoop-core "1.2.1"]]}}
   :classifiers {:javadoc {:java-source-paths ^:replace []
                           :source-paths ^:replace []
                           :resource-paths ^:replace []}

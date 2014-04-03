@@ -13,7 +13,10 @@
                                     :creds :gpg}
                         "snapshots" {:url "https://oss.sonatype.org/content/repositories/snapshots"
                                      :creds :gpg}}
-  :scm {:dir ".."}
+  :scm {:connection "scm:git:git://github.com/nathanmarz/dfs-datastores.git"
+        :developerConnection "scm:git:ssh://git@github.com/nathanmarz/dfs-datastores.git"
+        :url "https://github.com/nathanmarz/dfs-datastores"
+        :dir ".."}
   :pom-addition [:developers
                  [:developer
                   [:name "Nathan Marz"]
@@ -31,7 +34,7 @@
              {:dependencies [[org.slf4j/slf4j-log4j12 "1.6.6"]]
               :plugins [[lein-junit "1.1.5"]]}
              :provided
-             {:dependencies [[org.apache.hadoop/hadoop-core "1.0.3"]]}}
+             {:dependencies [[org.apache.hadoop/hadoop-core "1.2.1"]]}}
   :classifiers {:javadoc {:java-source-paths ^:replace []
                           :source-paths ^:replace []
                           :resource-paths ^:replace []}
