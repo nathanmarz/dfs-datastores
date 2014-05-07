@@ -42,6 +42,11 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
 
         public <T> void writeObject(T obj) throws IOException {
             PailStructure<T> structure = ((PailStructure<T>) _structure);
+            if (obj != null && !structure.getType().isInstance(obj)) {
+                throw new IllegalArgumentException("Cannot write object " + obj + " of invalid type (class: " +
+                        obj.getClass().getCanonicalName() + ") to pail: " + Pail.this + "; should be of type: " +
+                        structure.getType().getCanonicalName());
+            }
             List<String> rootAttrs = structure.getTarget(obj);
             List<String> attrs = makeRelative(rootAttrs);
             String targetDir = Utils.join(attrs, "/");
@@ -606,6 +611,16 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
                     userfilename + " is not valid with the pail structure " + getSpec().toString() +
                     " --> " + full.toString());
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Pail{");
+        sb.append("root='").append(_root).append('\'');
+        sb.append(", spec=").append(_spec);
+        sb.append(", fs=").append(_fs);
+        sb.append('}');
+        return sb.toString();
     }
 
     protected static class PailPathLister implements PathLister {
