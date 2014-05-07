@@ -156,7 +156,23 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         return create(Utils.getFS(path), path, spec, failOnExists);
     }
 
+    public static Pail create(String path, PailStructure structure, boolean failOnExists, boolean useSuppliedPailSpec) throws IOException {
+        return create(Utils.getFS(path), path, structure, failOnExists, useSuppliedPailSpec);
+    }
+
+    public static Pail create(FileSystem fs, String path, PailStructure structure, boolean failOnExists, boolean useSuppliedPailSpec) throws IOException {
+        return create(fs, path, new PailSpec(structure), failOnExists, useSuppliedPailSpec);
+    }
+
+    public static Pail create(String path, PailSpec spec, boolean failOnExists, boolean useSuppliedPailSpec) throws IOException {
+        return create(Utils.getFS(path), path, spec, failOnExists, useSuppliedPailSpec);
+    }
+
     public static Pail create(FileSystem fs, String path, PailSpec spec, boolean failOnExists) throws IOException {
+        return create(fs, path, spec, failOnExists, false);
+    }
+
+    public static Pail create(FileSystem fs, String path, PailSpec spec, boolean failOnExists, boolean useSuppliedPailSpec) throws IOException {
         Path pathp = new Path(path);
         PailFormatFactory.create(spec);
         PailSpec existing = getSpec(fs, pathp);
@@ -184,8 +200,10 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             spec.writeToFileSystem(fs, new Path(pathp, META));
         }
 
-
-        return new Pail(fs, path);
+        if(useSuppliedPailSpec)
+            return new Pail(fs, path, spec);
+        else
+            return new Pail(fs, path);
     }
 
     private static PailSpec getSpec(FileSystem fs, Path path) throws IOException {
@@ -230,12 +248,24 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
     }
 
     public Pail(FileSystem fs, String path) throws IOException {
+        this(fs, path, getSpec(fs, new Path(path)));
+    }
+
+    public Pail(String path, PailSpec spec) throws IOException {
+        this(Utils.getFS(path), path, spec);
+    }
+
+    public Pail(String path, PailStructure structure) throws IOException {
+        this(Utils.getFS(path), path, new PailSpec(structure));
+    }
+
+    public Pail(FileSystem fs, String path, PailSpec spec) throws IOException {
         super(path);
         _fs = fs;
         _root = getRoot(fs, new Path(path));
         if(_root==null || !fs.exists(new Path(path)))
             throw new IllegalArgumentException("Pail does not exist at path " + path);
-        _spec = getSpec(fs, new Path(path));
+        _spec = spec;
         _structure = _spec.getStructure();
         _format = PailFormatFactory.create(_spec);
     }
