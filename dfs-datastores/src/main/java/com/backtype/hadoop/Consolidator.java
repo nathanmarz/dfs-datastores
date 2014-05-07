@@ -1,5 +1,4 @@
 package com.backtype.hadoop;
-
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.hadoop.formats.RecordStreamFactory;
@@ -23,6 +22,7 @@ import java.util.*;
 
 public class Consolidator {
     public static final long DEFAULT_CONSOLIDATION_SIZE = 1024*1024*127; //127 MB
+    public static final String DEFAULT_WORKING_DIR = "/tmp/consolidator";
     private static final String ARGS = "consolidator_args";
 
     private static Thread shutdownHook;
@@ -35,17 +35,19 @@ public class Consolidator {
         public List<String> dirs;
         public long targetSizeBytes;
         public String extension;
-
+        public String workingDir;
 
         public ConsolidatorArgs(String fsUri, RecordStreamFactory streams, PathLister pathLister,
-            List<String> dirs, long targetSizeBytes, String extension) {
+                                List<String> dirs, long targetSizeBytes, String extension, String workingDir) {
             this.fsUri = fsUri;
             this.streams = streams;
             this.pathLister = pathLister;
             this.dirs = dirs;
             this.targetSizeBytes = targetSizeBytes;
             this.extension = extension;
+            this.workingDir = workingDir;
         }
+
     }
 
     public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
@@ -67,7 +69,7 @@ public class Consolidator {
         PathLister pathLister, long targetSizeBytes, String extension) throws IOException {
         List<String> dirs = new ArrayList<String>();
         dirs.add(targetDir);
-        consolidate(fs, streams, pathLister, dirs, targetSizeBytes, extension);
+        consolidate(fs, streams, pathLister, dirs, targetSizeBytes, extension, DEFAULT_WORKING_DIR);
     }
 
     private static String getDirsString(List<String> targetDirs) {
@@ -82,10 +84,10 @@ public class Consolidator {
     }
 
     public static void consolidate(FileSystem fs, RecordStreamFactory streams, PathLister lister, List<String> dirs,
-        long targetSizeBytes, String extension) throws IOException {
+        long targetSizeBytes, String extension, String workingDir) throws IOException {
         JobConf conf = new JobConf(fs.getConf(), Consolidator.class);
         String fsUri = fs.getUri().toString();
-        ConsolidatorArgs args = new ConsolidatorArgs(fsUri, streams, lister, dirs, targetSizeBytes, extension);
+        ConsolidatorArgs args = new ConsolidatorArgs(fsUri, streams, lister, dirs, targetSizeBytes, extension, workingDir);
         Utils.setObject(conf, ARGS, args);
 
         conf.setJobName("Consolidator: " + getDirsString(dirs));
@@ -159,7 +161,7 @@ public class Consolidator {
             //must have failed after succeeding to create file but before task finished - this is valid
             //because path is selected with a UUID
             if(!fs.exists(finalFile)) {
-                Path tmpFile = new Path("/tmp/consolidator/" + UUID.randomUUID().toString());
+                Path tmpFile = new Path(args.workingDir + Path.SEPARATOR + UUID.randomUUID().toString());
                 fs.mkdirs(tmpFile.getParent());
 
                 String status = "Consolidating " + sources.size() + " files into " + tmpFile.toString();
@@ -195,7 +197,8 @@ public class Consolidator {
             rprtr.setStatus(status);
 
             for(Path p: sources) {
-                fs.delete(p, false);
+                if(!fs.delete(p, false))
+                    throw new IOException("could not delete " + p.toString());
                 rprtr.progress();
             }
 
