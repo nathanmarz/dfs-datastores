@@ -589,6 +589,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
 
     protected List<String> componentsFromRoot(String relpath) {
        String fullpath = toFullPath(relpath);
+       LOG.info("Full path:" + fullpath);
        List<String> full = Utils.componentize(fullpath);
        List<String> root = Utils.componentize(getRoot());
        return Utils.stripRoot(root, full);
@@ -596,11 +597,10 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
 
     protected void checkValidStructure(String userfilename) {
         List<String> full = componentsFromRoot(userfilename);
-        full.remove(full.size()-1);
-        //hack to get around how hadoop does outputs --> _temporary and _attempt*
-        while(full.size()>0 && full.get(0).startsWith("_")) {
-            full.remove(0);
-        }
+
+        full.remove(full.size() - 1);
+        full = Utils.cleanHadoopPath(full);
+
         if(!getSpec().getStructure().isValidTarget(full.toArray(new String[full.size()]))) {
             throw new IllegalArgumentException(
                     userfilename + " is not valid with the pail structure " + getSpec().toString() +

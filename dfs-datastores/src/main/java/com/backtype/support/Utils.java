@@ -167,6 +167,32 @@ public class Utils {
         }
     }
 
+
+
+    public static List<String> cleanHadoopPath(List<String> components) {
+        //hack to get around how hadoop does outputs --> _temporary and _attempt*
+        //We go bottom up and stop there if there's a _attempt* or attempt* directory on the way
+        int first = components.size() - 1;
+        if (first <= 0)
+            return components;
+        Boolean isHadoopComponent = false;
+        while(first > 0)
+        {
+            String name = components.get(first);
+            if (name.startsWith("_attempt_") || name.startsWith("attempt_")) {
+                isHadoopComponent = true;
+                break;
+            }
+            first--;
+        }
+        if (! isHadoopComponent)
+            return components;
+
+        return  components.subList(first + 1, components.size());
+    }
+
+
+
     public static boolean firstNBytesSame(FileSystem fs1, Path p1, FileSystem fs2, Path p2, long n) throws IOException {
         FSDataInputStream f1 = fs1.open(p1);
         FSDataInputStream f2 = fs2.open(p2);

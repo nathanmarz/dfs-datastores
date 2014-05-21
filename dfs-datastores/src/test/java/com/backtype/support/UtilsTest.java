@@ -3,6 +3,7 @@ package com.backtype.support;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
@@ -11,6 +12,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import static com.backtype.support.TestUtils.*;
+import junit.framework.*;
 
 public class UtilsTest extends TestCase {
     public void testGetBytes() {
@@ -92,6 +94,25 @@ public class UtilsTest extends TestCase {
         assertTrue(Utils.firstNBytesSame(fs, new Path(path1), fs, new Path(path2), 5));
         assertTrue(Utils.firstNBytesSame(fs, new Path(path1), fs, new Path(path2), 1000));
 
+
+    }
+
+    public void testHadoopPathCleanup(){
+
+        String expected = "A/B/C";
+
+
+
+        String[] mrv1 = ("/root/somedir/_temporary/_attempt_xxxxx_yyyyyy/" + expected ).split("/");
+
+        String[] yarn =("/root/somedir/_temporary/1/_temporary/attempt_xxxxx_yyyyyy/" + expected).split("/");
+
+
+        String[] noHadoop = "/root/somedir/someotherdir/A/B/C".split("/");
+
+        Assert.assertEquals(Arrays.asList(expected.split("/")), Utils.cleanHadoopPath(Arrays.asList(mrv1)));
+        Assert.assertEquals(Arrays.asList(expected.split("/")), Utils.cleanHadoopPath(Arrays.asList(yarn)));
+        Assert.assertEquals(Arrays.asList(noHadoop), Utils.cleanHadoopPath(Arrays.asList(noHadoop)));
 
     }
 }
