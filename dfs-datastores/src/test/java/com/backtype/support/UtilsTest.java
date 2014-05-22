@@ -98,21 +98,14 @@ public class UtilsTest extends TestCase {
     }
 
     public void testHadoopPathCleanup(){
-
         String expected = "A/B/C";
 
-
-
         String[] mrv1 = ("/root/somedir/_temporary/_attempt_xxxxx_yyyyyy/" + expected ).split("/");
-
         String[] yarn =("/root/somedir/_temporary/1/_temporary/attempt_xxxxx_yyyyyy/" + expected).split("/");
-
-
         String[] noHadoop = "/root/somedir/someotherdir/A/B/C".split("/");
 
         Assert.assertEquals(Arrays.asList(expected.split("/")), Utils.cleanHadoopPath(Arrays.asList(mrv1)));
         Assert.assertEquals(Arrays.asList(expected.split("/")), Utils.cleanHadoopPath(Arrays.asList(yarn)));
         Assert.assertEquals(Arrays.asList(noHadoop), Utils.cleanHadoopPath(Arrays.asList(noHadoop)));
-
     }
 }

@@ -589,7 +589,6 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
 
     protected List<String> componentsFromRoot(String relpath) {
        String fullpath = toFullPath(relpath);
-       LOG.info("Full path:" + fullpath);
        List<String> full = Utils.componentize(fullpath);
        List<String> root = Utils.componentize(getRoot());
        return Utils.stripRoot(root, full);
