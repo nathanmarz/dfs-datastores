@@ -3,7 +3,6 @@
 *.iws
 .idea/
 pom.xml
-lib/
 *.class
 *.jar
 ## generic files to ignore
