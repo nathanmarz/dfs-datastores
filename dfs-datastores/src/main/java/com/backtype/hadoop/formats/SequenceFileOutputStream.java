@@ -37,4 +37,8 @@ public class SequenceFileOutputStream implements RecordOutputStream {
         _writer.close();
     }
 
+    @Override
+    public void flush() throws IOException {
+        _writer.hflush();
+    }
 }

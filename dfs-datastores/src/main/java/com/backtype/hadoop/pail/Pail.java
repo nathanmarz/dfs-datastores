@@ -3,6 +3,7 @@ package com.backtype.hadoop.pail;
 import com.backtype.hadoop.*;
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.support.IOBufferMap;
 import com.backtype.support.Utils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -20,13 +21,14 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
     public static final String META = "pail.meta";
 
     public class TypedRecordOutputStream implements RecordOutputStream {
-        private HashMap<String, RecordOutputStream> _workers = new HashMap<String, RecordOutputStream>();
-        private String _userfilename;
-        private boolean _overwrite;
+        protected HashMap<String, RecordOutputStream> _workers;
+        protected String _userfilename;
+        protected boolean _overwrite;
 
         public TypedRecordOutputStream(String userfilename, boolean overwrite) {
             _userfilename = userfilename;
             _overwrite = overwrite;
+            _workers = new HashMap<String, RecordOutputStream>();
         }
 
         public <T> void writeObject(T obj) throws IOException {
@@ -61,6 +63,16 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             }
         }
 
+        @Override
+        public void flush() throws IOException {
+            // NB. NONE OTHER THAN CANNONBALL WOULD USE IT.
+            // This it to facilitate flushing all buffers (from an external context)
+            // and still be able to use the outputStream for further writes.
+            for(RecordOutputStream worker: _workers.values()){
+                worker.flush();
+            }
+        }
+
         protected List<String> makeRelative(List<String> attrs) {
             return Utils.stripRoot(getAttrs(), attrs);
         }
@@ -75,6 +87,18 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
                 _workers.put(_userfilename, Pail.super.openWrite(_userfilename, _overwrite));
             }
             _workers.get(_userfilename).writeRaw(record, start, length);
+        }
+    }
+
+    // NB: used only at cannonball right now.
+    public class BoundedTypedRecordOutputStream extends TypedRecordOutputStream {
+        public BoundedTypedRecordOutputStream(String userfilename, boolean overwrite) {
+            this(userfilename, overwrite, 10);
+        }
+
+        public BoundedTypedRecordOutputStream(String userfilename, boolean overwrite, int maxBuffersToHold) {
+            super(userfilename, overwrite);
+            this._workers = new IOBufferMap(maxBuffersToHold);
         }
     }
 
@@ -229,6 +253,12 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         return _fs;
     }
 
+    public BoundedTypedRecordOutputStream openForBoundedWrite(int maxBuffersToHold, boolean overwrite) throws IOException {
+        String subFileName = UUID.randomUUID().toString();
+        if(subFileName.contains(META)) throw new IllegalArgumentException("Illegal user file name " + subFileName);
+        checkPathValidity(subFileName);
+        return new BoundedTypedRecordOutputStream(subFileName, overwrite, maxBuffersToHold);
+    }
 
     public TypedRecordOutputStream openWrite() throws IOException {
         return openWrite(UUID.randomUUID().toString(), false);

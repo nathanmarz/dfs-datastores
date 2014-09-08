@@ -31,4 +31,9 @@ public class SimpleOutputStream implements RecordOutputStream {
     public void close() throws IOException {
         _os.close();
     }
+
+    @Override
+    public void flush() throws IOException {
+        // NOT DOING ANYTHING TO LEAVE IT AT STATUS-QUO
+    }
 }

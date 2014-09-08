@@ -56,6 +56,11 @@ public abstract class AbstractPail {
             }
         }
 
+        @Override
+        public void flush() throws IOException {
+            // NOT DOING ANYTHING TO LEAVE IT AT STATUS-QUO
+        }
+
         public void writeRaw(byte[] record, int start, int length) throws IOException {
             delegate.writeRaw(record, start, length);
         }

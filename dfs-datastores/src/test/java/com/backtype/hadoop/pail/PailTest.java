@@ -2,17 +2,14 @@ package com.backtype.hadoop.pail;
 
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import java.io.IOException;
+import java.util.*;
+
 import static com.backtype.support.TestUtils.*;
 
 
@@ -328,7 +325,26 @@ public class PailTest extends TestCase {
         attrs = pail.getAttrsAtDir("a/b");
         assertEquals(1, attrs.size());
         assertEquals("c", attrs.get(0));
-
-
     }
-}
+
+    public void testBoundedOutputStream() throws IOException {
+        String path = getTmpPath(local, "boundedio");
+        Pail<String> pail = Pail.create(local, path, PailFormatFactory.getDefaultCopy().setStructure(new TestStructure()));
+        Pail<String>.BoundedTypedRecordOutputStream os = pail.openForBoundedWrite(3, false);
+        os.writeObject("a1");
+        os.writeObject("b1");
+        os.writeObject("c1");
+        os.writeObject("a2");
+        os.writeObject("za1");
+        os.writeObject("za2");
+        os.writeObject("zb1");
+        os.close();
+
+        pail = new Pail(local, path);
+        assertPailContents(pail, "a1", "b1", "c1", "a2", "za1", "za2", "zb1");
+        assertPailContents(pail.getSubPail("a"), "a1", "a2");
+        assertPailContents(pail.getSubPail("a/1"));
+        assertPailContents(pail.getSubPail("z"), "za1", "za2", "zb1");
+        assertPailContents(pail.getSubPail("z/a"), "za1", "za2");
+    }
+ }
