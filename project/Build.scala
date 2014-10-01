@@ -35,6 +35,8 @@ object Build extends Build {
     // Publishing options:
     publishMavenStyle := true,
 
+    publishArtifact in (Compile, packageDoc) := false,
+
     publishArtifact in Test := false,
 
     pomIncludeRepository := { x => false },
