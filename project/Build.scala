@@ -2,11 +2,11 @@ import sbt._
 import Keys._
 import sbtgitflow.ReleasePlugin._
 
-object DfsDatastoresBuild extends Build {
+object Build extends Build {
+  val ScalaVersion = "2.10.3"
+
   val sharedSettings = Project.defaultSettings ++ releaseSettings ++ Seq(
     organization := "com.backtype",
-
-    autoScalaLibrary := false,
 
     crossPaths := false,
 
@@ -29,6 +29,8 @@ object DfsDatastoresBuild extends Build {
     parallelExecution in Test := false,
 
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
+
+    scalaVersion := ScalaVersion,
 
     // Publishing options:
     publishMavenStyle := true,
@@ -104,7 +106,8 @@ object DfsDatastoresBuild extends Build {
       "org.apache.hadoop" % "hadoop-common" % "2.0.0-cdh4.2.1",
       "org.apache.hadoop" % "hadoop-hdfs" % "2.0.0-cdh4.2.1",
       //"org.apache.hadoop" % "hadoop-mapreduce" % "2.0.0-cdh4.2.1",
-      "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.15"
+      "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.15",
+      "org.scalatest" %% "scalatest" % "2.2.0" % "test"
     ).map(_.exclude("commons-daemon", "commons-daemon"))
   )
 
