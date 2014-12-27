@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.backtype.hadoop.mapreduce.io.PailRecordInfo;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
@@ -70,7 +71,7 @@ public class PailTap extends Hfs {
     private PailTapOptions _options;
 
     public PailScheme(PailTapOptions options) {
-      super(new Fields("pail_root", options.fieldName), Fields.ALL);
+      super(new Fields("pail_root", options.fieldName, "full_path", "split_start", "records_to_skip"), Fields.ALL);
       _options = options;
     }
 
@@ -152,9 +153,9 @@ public class PailTap extends Hfs {
       Object v = sourceCall.getContext()[1];
       boolean result = sourceCall.getInput().next(k, v);
       if (!result) { return false; }
-      String relPath = ((Text) k).toString();
+      PailRecordInfo recordInfo = ((PailRecordInfo) k);
       Object value = deserialize((BytesWritable) v);
-      sourceCall.getIncomingEntry().setTuple(new Tuple(relPath, value));
+      sourceCall.getIncomingEntry().setTuple(new Tuple(recordInfo.getPailRelativePath(), value, recordInfo.getFullPath(), recordInfo.getSplitStartOffset(), recordInfo.getRecordsToSkip()));
       return true;
     }
 

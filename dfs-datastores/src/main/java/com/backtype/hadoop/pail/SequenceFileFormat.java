@@ -4,6 +4,7 @@ import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.hadoop.formats.SequenceFileInputStream;
 import com.backtype.hadoop.formats.SequenceFileOutputStream;
+import com.backtype.hadoop.mapreduce.io.PailRecordInfo;
 import com.backtype.support.KeywordArgParser;
 import com.backtype.support.Utils;
 import com.hadoop.compression.lzo.LzoCodec;
@@ -85,7 +86,7 @@ public class SequenceFileFormat implements PailFormat {
     }
 
 
-    public static class SequenceFilePailRecordReader implements RecordReader<Text, BytesWritable> {
+    public static class SequenceFilePailRecordReader implements RecordReader<PailRecordInfo, BytesWritable> {
         private static Logger LOG = LoggerFactory.getLogger(SequenceFilePailRecordReader.class);
         public static final int NUM_TRIES = 10;
 
@@ -120,7 +121,7 @@ public class SequenceFileFormat implements PailFormat {
             }
         }
 
-        public boolean next(Text k, BytesWritable v) throws IOException {
+        public boolean next(PailRecordInfo k, BytesWritable v) throws IOException {
             /**
              * There's 2 bugs that happen here, both resulting in indistinguishable EOFExceptions.
              *
@@ -134,8 +135,12 @@ public class SequenceFileFormat implements PailFormat {
             for(int i=0; i<NUM_TRIES; i++) {
                 try {
                     boolean ret = delegate.next(v, NullWritable.get());
-                    k.set(split.getPailRelPath());
                     recordsRead++;
+
+                    k.setFullPath(split.getPath().toString());
+                    k.setPailRelativePath(split.getPailRelPath());
+                    k.setSplitStartOffset(split.getStart());
+                    k.setRecordsToSkip(recordsRead);
                     return ret;
                 } catch(EOFException e) {
                     progress();
@@ -151,8 +156,8 @@ public class SequenceFileFormat implements PailFormat {
             return false;
         }
 
-        public Text createKey() {
-            return new Text();
+        public PailRecordInfo createKey() {
+            return new PailRecordInfo();
         }
 
         public BytesWritable createValue() {
@@ -173,7 +178,7 @@ public class SequenceFileFormat implements PailFormat {
 
     }
 
-    public static class SequenceFilePailInputFormat extends SequenceFileInputFormat<Text, BytesWritable> {
+    public static class SequenceFilePailInputFormat extends SequenceFileInputFormat<PailRecordInfo, BytesWritable> {
         private Pail _currPail;
 
 
@@ -203,7 +208,7 @@ public class SequenceFileFormat implements PailFormat {
         }
 
         @Override
-        public RecordReader<Text, BytesWritable> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
+        public RecordReader<PailRecordInfo, BytesWritable> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
             return new SequenceFilePailRecordReader(job, (PailInputSplit) split, reporter);
         }
     }

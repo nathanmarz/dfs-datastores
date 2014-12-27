@@ -28,7 +28,7 @@ import java.util.List;
 import static com.backtype.hadoop.pail.PailFormatFactory.getPailPaths;
 
 
-public class PailInputFormat extends SequenceFileInputFormat<Text, BytesWritable> {
+public class PailInputFormat extends SequenceFileInputFormat<PailRecordInfo, BytesWritable> {
     private Pail _currPail;
 
     @Override
@@ -59,11 +59,11 @@ public class PailInputFormat extends SequenceFileInputFormat<Text, BytesWritable
 
 
     @Override
-    public RecordReader<Text, BytesWritable> createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException {
+    public RecordReader<PailRecordInfo, BytesWritable> createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException {
         return new SequenceFilePailRecordReader((PailInputSplit) split, context);
     }
 
-    public static class SequenceFilePailRecordReader extends RecordReader<Text, BytesWritable> {
+    public static class SequenceFilePailRecordReader extends RecordReader<PailRecordInfo, BytesWritable> {
         private static Logger LOG = LoggerFactory.getLogger(SequenceFilePailRecordReader.class);
         public static final int NUM_TRIES = 10;
 
@@ -138,8 +138,8 @@ public class PailInputFormat extends SequenceFileInputFormat<Text, BytesWritable
         }
 
         @Override
-        public Text getCurrentKey() throws IOException, InterruptedException {
-            return new Text(split.getPailRelPath());
+        public PailRecordInfo getCurrentKey() throws IOException, InterruptedException {
+            return new PailRecordInfo(split.getPath().toString(), split.getPailRelPath(), split.getStart(), recordsRead);
         }
 
         @Override
