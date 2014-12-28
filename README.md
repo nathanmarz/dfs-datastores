@@ -9,3 +9,8 @@ To run the tests:
 ```scala
 sbt test
 ```
+
+To publish the changes
+* Update the minor / majar version in version.sbt
+* `sbt publish` to publish the artifact to artifactory
+
