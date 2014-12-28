@@ -1,7 +1,6 @@
 package com.backtype.hadoop.pail;
 
 import com.backtype.support.Utils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -15,11 +14,11 @@ public class PailFormatFactory {
 
     public static final String PAIL_PATH_LISTER = "pail.path.lister";
 
-    public static void setPailPathLister(Configuration conf, PailPathLister lister) {
+    public static void setPailPathLister(JobConf conf, PailPathLister lister) {
         Utils.setObject(conf, PAIL_PATH_LISTER, lister);
     }
 
-    public static List<Path> getPailPaths(Pail p, Configuration conf) throws IOException {
+    public static List<Path> getPailPaths(Pail p, JobConf conf) throws IOException {
         PailPathLister lister = (PailPathLister) Utils.getObject(conf, PAIL_PATH_LISTER);
         if(lister==null) lister = new AllPailPathLister();
         return lister.getPaths(p);
