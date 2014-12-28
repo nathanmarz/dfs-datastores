@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.backtype.hadoop.mapreduce.io.PailRecordInfo;
+import com.backtype.hadoop.pail.*;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
@@ -18,14 +18,6 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.log4j.Logger;
 
-import com.backtype.hadoop.pail.BinaryPailStructure;
-import com.backtype.hadoop.pail.DefaultPailStructure;
-import com.backtype.hadoop.pail.Pail;
-import com.backtype.hadoop.pail.PailFormatFactory;
-import com.backtype.hadoop.pail.PailOutputFormat;
-import com.backtype.hadoop.pail.PailPathLister;
-import com.backtype.hadoop.pail.PailSpec;
-import com.backtype.hadoop.pail.PailStructure;
 import com.backtype.support.Utils;
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;

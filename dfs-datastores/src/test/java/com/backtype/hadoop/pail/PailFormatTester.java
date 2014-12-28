@@ -1,6 +1,5 @@
 package com.backtype.hadoop.pail;
 
-import com.backtype.hadoop.mapreduce.io.PailRecordInfo;
 import com.backtype.support.Utils;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;

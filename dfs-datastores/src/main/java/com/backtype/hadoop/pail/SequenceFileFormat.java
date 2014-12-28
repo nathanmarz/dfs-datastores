@@ -4,7 +4,6 @@ import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.hadoop.formats.SequenceFileInputStream;
 import com.backtype.hadoop.formats.SequenceFileOutputStream;
-import com.backtype.hadoop.mapreduce.io.PailRecordInfo;
 import com.backtype.support.KeywordArgParser;
 import com.backtype.support.Utils;
 import com.hadoop.compression.lzo.LzoCodec;
