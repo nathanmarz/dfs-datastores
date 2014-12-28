@@ -10,10 +10,7 @@ object Build extends Build {
 
     crossPaths := false,
 
-    version := releaseVersion,
-
     javacOptions ++= Seq("-source", "1.6", "-target", "1.7"),
-
     javacOptions in doc := Seq("-source", "1.7"),
 
     libraryDependencies ++= Seq(
@@ -127,9 +124,5 @@ object Build extends Build {
       "cascading" % "cascading-hadoop" % "2.0.7"
     )
   ).dependsOn(core)
-
-  lazy val releaseVersion = System.getenv("GO_PIPELINE_LABEL") match {
-    case null => "0.1-SNAPSHOT"
-    case _ => System.getenv("GO_PIPELINE_LABEL")
-  }
 }
+
