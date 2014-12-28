@@ -1,4 +1,4 @@
-package com.backtype.hadoop.mapreduce.io;
+package com.backtype.hadoop.pail;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
