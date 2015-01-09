@@ -3,7 +3,7 @@ import Keys._
 import sbtgitflow.ReleasePlugin._
 
 object Build extends Build {
-  val ScalaVersion = "2.10.3"
+  val ScalaVersion = "2.10.4"
 
   val sharedSettings = Project.defaultSettings ++ releaseSettings ++ Seq(
     organization := "com.backtype",
