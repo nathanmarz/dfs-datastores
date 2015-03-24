@@ -30,14 +30,14 @@ import org.slf4j.LoggerFactory
  * @param lockRecheckInterval pooling interval while waiting on either READ / WRITE locks.
  */
 class PailLock(lockType: PailLockType, component: String, inputDirectory: String, lockRecheckInterval: Int = 30000) {
-  val fileSystem = FileSystem.get(new Configuration())
+  def fileSystem(path: String) = new Path(path).getFileSystem(new Configuration)
   val logger = LoggerFactory.getLogger(this.getClass)
 
   val pathToLockFile = inputDirectory + "/" + ".LOCK_" + lockType + "_" + component
 
   def createLockFile() = {
     logger.info("Acquiring " + lockType + " lock...")
-    fileSystem.createNewFile(new Path(pathToLockFile))
+    fileSystem(pathToLockFile).createNewFile(new Path(pathToLockFile))
     logger.info("Acquired " + lockType + " lock.")
   }
 
@@ -52,12 +52,12 @@ class PailLock(lockType: PailLockType, component: String, inputDirectory: String
 
   def release() = {
     logger.info("Attempting to release " + lockType + " lock...")
-    fileSystem.delete(new Path(pathToLockFile), false)
+    fileSystem(pathToLockFile).delete(new Path(pathToLockFile), false)
     logger.info(lockType + " lock was released.")
   }
 
   private def autoReleaseOnExit() = {
-    fileSystem.deleteOnExit(new Path(pathToLockFile))
+    fileSystem(pathToLockFile).deleteOnExit(new Path(pathToLockFile))
   }
 
   private def acquireWriteLock() = {
@@ -71,11 +71,11 @@ class PailLock(lockType: PailLockType, component: String, inputDirectory: String
   }
 
   private def waitUntilLockIsFree(lockPrefix: String) = {
-    if (fileSystem.listStatus(new Path(inputDirectory)).exists(_.getPath.toString.contains(lockPrefix))) {
+    if (fileSystem(inputDirectory).listStatus(new Path(inputDirectory)).exists(_.getPath.toString.contains(lockPrefix))) {
       logger.info("Unable to acquire " + lockType + " lock. Entering wait phase...")
     }
 
-    while (fileSystem.listStatus(new Path(inputDirectory)).exists(_.getPath.toString.contains(lockPrefix))) {
+    while (fileSystem(inputDirectory).listStatus(new Path(inputDirectory)).exists(_.getPath.toString.contains(lockPrefix))) {
       sleep(lockRecheckInterval)
     }
   }
