@@ -173,6 +173,10 @@ public class PailTest extends TestCase {
         emitToPail(pail, "100aaa", new byte[] {1});
         emitToPail(pail, "101/202/303", new byte[] {1});
         checkStoredFiles(pail, path + "/a/b/c", path + "/e", path + "/100aaa", path + "/101/202/303");
+        // Check for ignore directory
+        emitToPail(pail, "101/~~202/303", new byte[] {1});
+        emitToPail(pail, "101/~~ERROR~~/303", new byte[] {1});
+        checkStoredFiles(pail, path + "/a/b/c", path + "/e", path + "/100aaa", path + "/101/202/303", path + "/101/~~202/303");
     }
 
     public void testSubPail() throws Exception {
