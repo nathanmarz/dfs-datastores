@@ -510,7 +510,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             } else {
                 FileStatus[] contents = listStatus(new Path(toFullPath(dir)));
                 for(FileStatus f: contents) {
-                    if(!f.isDirectory()) {
+                    if(!f.isDir()) {
                         if(f.getPath().toString().endsWith(EXTENSION))
                             throw new IllegalStateException(f.getPath().toString() + " is not a dir and breaks the structure of " + getInstanceRoot());
                     } else {
@@ -562,7 +562,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
 
         List<FileStatus> ret = new ArrayList<FileStatus>();
         for(FileStatus fs: arr) {
-            if(!fs.isDirectory() || !fs.getPath().getName().startsWith("_") &&
+            if(!fs.isDir() || !fs.getPath().getName().startsWith("_") &&
                !fs.getPath().toString().contains("~~ERROR~~")) {
                 ret.add(fs);
             }
