@@ -34,9 +34,4 @@
              {:dependencies [[org.slf4j/slf4j-log4j12 "1.6.6"]]
               :plugins [[lein-junit "1.1.5"]]}
              :provided
-             {:dependencies [[org.apache.hadoop/hadoop-core "1.2.1"]]}}
-  :classifiers {:javadoc {:java-source-paths ^:replace []
-                          :source-paths ^:replace []
-                          :resource-paths ^:replace []}
-                :sources {:java-source-paths ^:replace []
-                          :resource-paths ^:replace []}})
+             {:dependencies [[org.apache.hadoop/hadoop-core "1.2.1"]]}})
