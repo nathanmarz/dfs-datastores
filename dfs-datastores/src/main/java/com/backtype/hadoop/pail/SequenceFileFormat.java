@@ -13,7 +13,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.BZip2Codec;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
@@ -133,13 +132,14 @@ public class SequenceFileFormat implements PailFormat {
              */
             for(int i=0; i<NUM_TRIES; i++) {
                 try {
+                    long recordStartPos = delegate.getPos();
                     boolean ret = delegate.next(v, NullWritable.get());
                     recordsRead++;
 
                     k.setFullPath(split.getPath().toString());
                     k.setPailRelativePath(split.getPailRelPath());
-                    k.setSplitStartOffset(split.getStart());
-                    k.setRecordsToSkip(recordsRead);
+                    k.setSplitStartOffset(recordStartPos);
+                    k.setRecordsToSkip(0);
                     return ret;
                 } catch(EOFException e) {
                     progress();
