@@ -1,1 +1,1 @@
-version in ThisBuild := "1.6-pail-test-SNAPSHOT"
+version in ThisBuild := "1.5.4-indix"
