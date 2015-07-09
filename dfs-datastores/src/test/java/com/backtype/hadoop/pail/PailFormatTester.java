@@ -4,26 +4,20 @@ import com.backtype.support.Utils;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.*;
 
-import static com.backtype.support.TestUtils.*;
-import static org.apache.hadoop.io.SequenceFile.Reader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.backtype.support.TestUtils.emitToPail;
+import static com.backtype.support.TestUtils.getTmpPath;
 import static org.apache.hadoop.io.SequenceFile.Reader.file;
 import static org.apache.hadoop.io.SequenceFile.Reader.start;
 
@@ -123,7 +117,7 @@ public abstract class PailFormatTester extends TestCase {
     }
 
     private void assertDataFromRecordInfo(PailRecordInfo recordInfo, String expected) throws IOException {
-        Reader reader = new Reader(local.getConf(), file(new Path(recordInfo.getFullPath())), start(recordInfo.getSplitStartOffset()));
+        SequenceFile.Reader reader = new SequenceFile.Reader(local.getConf(), file(new Path(recordInfo.getFullPath())), start(recordInfo.getSplitStartOffset()));
         BytesWritable value = new BytesWritable();
         for (int i = 0; i < recordInfo.getRecordsToSkip(); i++) reader.next(value);
         String actual = new String(value.getBytes());

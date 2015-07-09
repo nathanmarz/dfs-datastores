@@ -12,6 +12,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.BZip2Codec;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -95,6 +96,7 @@ public class SequenceFileFormat implements PailFormat {
         Reporter reporter;
 
         SequenceFileRecordReader<BytesWritable, NullWritable> delegate;
+        boolean isBlockCompressed = false;
 
 
         public SequenceFilePailRecordReader(JobConf conf, PailInputSplit split, Reporter reporter) throws IOException {
@@ -103,11 +105,12 @@ public class SequenceFileFormat implements PailFormat {
            this.recordsRead = 0;
            this.reporter = reporter;
            LOG.info("Processing pail file " + split.getPath().toString());
+            ifBlockCompressed();
            resetDelegate();
         }
 
         private void resetDelegate() throws IOException {
-           this.delegate = new SequenceFileRecordReader<BytesWritable, NullWritable>(conf, split);
+            this.delegate = new SequenceFileRecordReader<BytesWritable, NullWritable>(conf, split);
            BytesWritable dummyValue = new BytesWritable();
            for(int i=0; i<recordsRead; i++) {
                long posBeforeNext = delegate.getPos();
@@ -117,6 +120,12 @@ public class SequenceFileFormat implements PailFormat {
            }
         }
 
+        private void ifBlockCompressed() throws IOException {
+            SequenceFile.Reader reader = new SequenceFile.Reader(conf, SequenceFile.Reader.file(split.getPath()));
+            this.isBlockCompressed = reader.isBlockCompressed();
+            reader.close();
+        }
+
         private void progress() {
             if(reporter!=null) {
                 reporter.progress();
@@ -124,9 +133,13 @@ public class SequenceFileFormat implements PailFormat {
         }
 
         private void checkForOffsetDuringBlockCompression(long posBeforeReading, long posAfterReading) {
-            if(posAfterReading != posBeforeReading) {
-                recordsRead =0;
-                currentStartOffset = posBeforeReading;
+            if(isBlockCompressed) {
+                if (posAfterReading != posBeforeReading) {
+                    recordsRead = 0;
+                    currentStartOffset = posBeforeReading;
+                } else {
+                    recordsRead++;
+                }
             } else {
                 recordsRead++;
             }
