@@ -91,6 +91,7 @@ public class SequenceFileFormat implements PailFormat {
         JobConf conf;
         PailInputSplit split;
         int recordsRead;
+        long currentStartOffset = 0;
         Reporter reporter;
 
         SequenceFileRecordReader<BytesWritable, NullWritable> delegate;
@@ -109,13 +110,25 @@ public class SequenceFileFormat implements PailFormat {
            this.delegate = new SequenceFileRecordReader<BytesWritable, NullWritable>(conf, split);
            BytesWritable dummyValue = new BytesWritable();
            for(int i=0; i<recordsRead; i++) {
+               long posBeforeNext = delegate.getPos();
                delegate.next(dummyValue, NullWritable.get());
+               long posAfterNext = delegate.getPos();
+               checkForOffsetDuringBlockCompression(posBeforeNext, posAfterNext);
            }
         }
 
         private void progress() {
             if(reporter!=null) {
                 reporter.progress();
+            }
+        }
+
+        private void checkForOffsetDuringBlockCompression(long posBeforeReading, long posAfterReading) {
+            if(posAfterReading != posBeforeReading) {
+                recordsRead =0;
+                currentStartOffset = posBeforeReading;
+            } else {
+                recordsRead++;
             }
         }
 
@@ -132,14 +145,15 @@ public class SequenceFileFormat implements PailFormat {
              */
             for(int i=0; i<NUM_TRIES; i++) {
                 try {
-                    long recordStartPos = delegate.getPos();
+                    long posBeforeNext = delegate.getPos();
                     boolean ret = delegate.next(v, NullWritable.get());
-                    recordsRead++;
+                    long posAfterNext = delegate.getPos();
+                    checkForOffsetDuringBlockCompression(posBeforeNext, posAfterNext);
 
                     k.setFullPath(split.getPath().toString());
                     k.setPailRelativePath(split.getPailRelPath());
-                    k.setSplitStartOffset(recordStartPos);
-                    k.setRecordsToSkip(0);
+                    k.setSplitStartOffset(currentStartOffset);
+                    k.setRecordsToSkip(recordsRead);
                     return ret;
                 } catch(EOFException e) {
                     progress();
