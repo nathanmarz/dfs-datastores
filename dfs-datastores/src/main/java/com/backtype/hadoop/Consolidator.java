@@ -22,7 +22,7 @@ import java.util.*;
 
 
 public class Consolidator {
-    public static final long DEFAULT_CONSOLIDATION_SIZE = 1024*1024*127; //127 MB
+    public static final long DEFAULT_CONSOLIDATION_SIZE = 1024*1024*1024*2l; //2G
     private static final String ARGS = "consolidator_args";
 
     private static Thread shutdownHook;
@@ -153,6 +153,7 @@ public class Consolidator {
             Path finalFile = new Path(target.toString());
 
             List<Path> sources = new ArrayList<Path>();
+            Set<String> parents = new HashSet<String>();
             for(int i=0; i<sourcesArr.get().length; i++) {
                 sources.add(new Path(((Text)sourcesArr.get()[i]).toString()));
             }
@@ -172,6 +173,7 @@ public class Consolidator {
                 RecordOutputStream os = fact.getOutputStream(fs, tmpFile);
                 for(Path i: sources) {
                     LOG.info("Opening " + i.toString() + " for consolidation");
+                    parents.add(i.getParent().toString());
                     RecordInputStream is = fact.getInputStream(fs, i);
                     byte[] record;
                     while((record = is.readRawRecord()) != null) {
@@ -196,6 +198,15 @@ public class Consolidator {
 
             for(Path p: sources) {
                 fs.delete(p, false);
+                rprtr.progress();
+            }
+
+            for(String p: parents) {
+                Path path = new Path(p);
+                if(fs.listStatus(path).length == 0) {
+                    LOG.info("Deleting consolidated directory " + p);
+                    fs.delete(path, true);
+                }
                 rprtr.progress();
             }
 
