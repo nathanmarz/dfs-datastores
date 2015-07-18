@@ -36,8 +36,10 @@ public class Consolidator {
         public List<String> dirs;
         public long targetSizeBytes;
         public String extension;
-        public PailStructure<?> structure;
+        public Class<? extends PailStructure> structure;
         public String rootDir;
+
+        private PailStructure<?> underlyingStructure = null;
 
 
         public ConsolidatorArgs(String fsUri, RecordStreamFactory streams, PathLister pathLister,
@@ -48,8 +50,25 @@ public class Consolidator {
             this.dirs = dirs;
             this.targetSizeBytes = targetSizeBytes;
             this.extension = extension;
-            this.structure = structure;
+            // We only hold the class and not the actual reference even though they're serializable because
+            // some structures might be using transient Logger instances which will be null when deserialized back
+            // that could cause runtime NPEs
+            this.structure = structure.getClass();
             this.rootDir = rootDir;
+        }
+
+        public PailStructure<?> getStructure() {
+            if (underlyingStructure == null) {
+                try {
+                    underlyingStructure = structure.newInstance();
+                } catch (InstantiationException e) {
+                    throw new RuntimeException(e);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            return underlyingStructure;
         }
     }
 
@@ -413,7 +432,7 @@ public class Consolidator {
             for(String dir: dirs) {
                 FileSystem fs = Utils.getFS(dir, conf);
                 ret.addAll(createSplits(fs, lister.getFiles(fs, dir),
-                        args.targetSizeBytes, args.extension, args.structure, args.rootDir));
+                        args.targetSizeBytes, args.extension, args.getStructure(), args.rootDir));
             }
             return ret.toArray(new InputSplit[ret.size()]);
         }
