@@ -501,13 +501,13 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         List<String> toCheck = new ArrayList<String>();
         toCheck.add("");
         PailStructure structure = getSpec().getStructure();
-        List<String> consolidatedirs = new ArrayList<String>();
+        List<String> consolidatedirs = new ArrayList<String>() {{
+            toFullPath("");
+        }};
         while(toCheck.size()>0) {
             String dir = toCheck.remove(0);
             List<String> dirComponents = componentsFromRoot(dir);
-            if(structure.isValidTarget(dirComponents.toArray(new String[dirComponents.size()]))) {
-                consolidatedirs.add(toFullPath(dir));
-            } else {
+            if(!structure.isValidTarget(dirComponents.toArray(new String[dirComponents.size()]))) {
                 FileStatus[] contents = listStatus(new Path(toFullPath(dir)));
                 for(FileStatus f: contents) {
                     if(!f.isDir()) {
