@@ -72,6 +72,22 @@ public class PailOpsTest extends FSTestCase {
         assertPailContents(pail);
     }
 
+    public void testFileListing() throws Exception {
+        String path = getTmpPath(local, "pail");
+        Pail pail = Pail.create(local, path);
+        writeStrings(pail, "aaa", "a", "b", "c", "d", "e");
+        writeStrings(pail, "b/c/ddd", "1", "2", "3");
+        writeStrings(pail, "b/c/eee", "aaa", "bbb", "ccc", "ddd", "eee", "fff");
+        writeStrings(pail, "f", "z");
+        writeStrings(pail, "g", "zz");
+        writeStrings(pail, "h", "zzz");
+        pail.writeMetadata("a/b/qqq", "lalala");
+        pail.writeMetadata("f", "abc");
+
+        List<String> fileNames = pail.getUserFileNames();
+        assertEquals(6, fileNames.size());
+    }
+
     public void testConsolidationOne() throws Exception {
         String path = getTmpPath(local, "pail");
         Pail pail = Pail.create(local, path);

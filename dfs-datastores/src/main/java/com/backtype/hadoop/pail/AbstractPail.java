@@ -3,12 +3,16 @@ package com.backtype.hadoop.pail;
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.support.Utils;
+import com.google.common.util.concurrent.Futures;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
+import scala.concurrent.ExecutionContext;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 public abstract class AbstractPail {
@@ -16,6 +20,7 @@ public abstract class AbstractPail {
     public static final String META_EXTENSION = ".metafile";
     public static final String META_TEMP_EXTENSION = ".metafiletmp";
     private static final String TEMP_EXTENSION = ".pailfiletmp";
+    private static final Logger LOGGER = Logger.getLogger(AbstractPail.class);
 
     private class PailOutputStream implements RecordOutputStream {
 
@@ -182,7 +187,7 @@ public abstract class AbstractPail {
         List<String> extensions = new ArrayList<String>();
         extensions.add(META_EXTENSION);
         extensions.add(EXTENSION);
-        getFilesHelper(new Path(_instance_root), "", extensions, false, relFiles);
+        getFilesHelperOptimized(new Path(_instance_root), "", extensions, false, relFiles);
         List<Path> ret = new ArrayList<Path>();
         for(String rel: relFiles) {
             ret.add(new Path(_instance_root, rel));
@@ -247,9 +252,10 @@ public abstract class AbstractPail {
     private void getFilesHelper(Path abs, String rel, String extension, boolean stripExtension, List<String> files) throws IOException {
         List<String> extensions = new ArrayList<String>();
         extensions.add(extension);
-        getFilesHelper(abs, rel, extensions, stripExtension, files);
+        getFilesHelperOptimized(abs, rel, extensions, stripExtension, files);
     }
 
+//    TODO: This should go away after we find it stable.
     private void getFilesHelper(Path abs, String rel, List<String> extensions, boolean stripExtension, List<String> files) throws IOException {
         FileStatus[] contents = listStatus(abs);
         for(FileStatus stat: contents) {
@@ -273,4 +279,73 @@ public abstract class AbstractPail {
             }
         }
     }
+
+    private Path withoutScheme(Path path){
+        String rawPath = path.toUri().getRawPath();
+        return new Path(rawPath);
+    }
+
+    private String relativizePaths(Path base, Path itemToRelativize){
+        URI baseUri = base.toUri();
+        if(baseUri.getScheme() == null){
+            String rawBasePath = baseUri.getRawPath();
+            Path p = withoutScheme(itemToRelativize);
+            return p.toString().replaceFirst(rawBasePath,"").replaceFirst("/","");
+        }else{
+            return itemToRelativize.toString().replaceFirst(base.toString(), "").replaceFirst("/","");
+        }
+    }
+
+    private void getFilesHelperOptimized(Path abs, String rel, List<String> extensions, boolean stripExtension, List<String> files) throws IOException {
+        ThreadPoolExecutor executorService = (ThreadPoolExecutor)Executors.newFixedThreadPool(16);
+        BlockingQueue<FileStatus> outQ = new LinkedBlockingQueue<FileStatus>(10000);
+        List<FileStatus> items = Arrays.asList(listStatus(abs));
+        LOGGER.info("Start enlisting base dir " + abs);
+        long startFileListing = System.currentTimeMillis();
+        for (FileStatus item : items) {
+            outQ.add(item);
+        }
+        int tasksSubmitted = 0;
+        do {
+            FileStatus item = outQ.poll();
+            if(item == null) continue;
+            if (item.isFile()) {
+                String filename = relativizePaths(abs, item.getPath());
+                for (String extension : extensions) {
+                    if (filename.endsWith(extension) && item.getLen() > 0) {
+                        String toAdd = stripExtension ? Utils.stripExtension(filename, extension) : filename;
+                        files.add(toAdd);
+                        break;
+                    }
+                }
+            } else {
+                executorService.submit(fetchFiles(outQ, item.getPath()));
+                ++tasksSubmitted;
+            }
+        } while (executorService.getCompletedTaskCount() < tasksSubmitted || !outQ.isEmpty());
+        executorService.shutdown();
+        LOGGER.info("Total # of files under "+abs.toString()+" = "+files.size()+", took: "+(System.currentTimeMillis()-startFileListing)+" millis");
+    }
+
+    /*Pass the base dir to be relified inside. The item in the outQ should be relified wrt to its base*/
+    private Runnable fetchFiles(final BlockingQueue<FileStatus> queue, final Path absPath) throws IOException {
+        return new Runnable() {
+            public void run() {
+                try {
+                    LOGGER.debug("Fetching files under " + absPath);
+                    long start = System.currentTimeMillis();
+                    FileStatus[] items = listStatus(absPath);
+                    LOGGER.debug("Got " + items.length + " for " + absPath + ", in " + (System.currentTimeMillis()-start)+" millis");
+                    for (FileStatus item : items) {
+                        queue.put(item);
+                    }
+                } catch (IOException e) {
+                    LOGGER.error(e);
+                } catch (InterruptedException e) {
+                    LOGGER.error(e);
+                }
+            }
+        };
+    }
+
 }
