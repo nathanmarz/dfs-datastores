@@ -1,1 +1,1 @@
-version in ThisBuild := "1.5.5-indix"
+version in ThisBuild := "1.5.6-indix"
