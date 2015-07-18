@@ -501,9 +501,8 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         List<String> toCheck = new ArrayList<String>();
         toCheck.add("");
         PailStructure structure = getSpec().getStructure();
-        List<String> consolidatedirs = new ArrayList<String>() {{
-            toFullPath("");
-        }};
+        List<String> consolidatedirs = new ArrayList<String>();
+        consolidatedirs.add(toFullPath(""));
         while(toCheck.size()>0) {
             String dir = toCheck.remove(0);
             List<String> dirComponents = componentsFromRoot(dir);
@@ -523,7 +522,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             }
         }
 
-        Consolidator.consolidate(_fs, _format, new PailPathLister(false), consolidatedirs, maxSize, EXTENSION);
+        Consolidator.consolidate(_fs, _format, new PailPathLister(false), consolidatedirs, maxSize, EXTENSION, structure, getRoot());
     }
 
     @Override

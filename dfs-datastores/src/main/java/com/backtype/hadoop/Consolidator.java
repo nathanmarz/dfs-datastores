@@ -3,6 +3,7 @@ package com.backtype.hadoop;
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.hadoop.formats.RecordStreamFactory;
+import com.backtype.hadoop.pail.PailStructure;
 import com.backtype.support.SubsetSum;
 import com.backtype.support.SubsetSum.Value;
 import com.backtype.support.Utils;
@@ -35,39 +36,43 @@ public class Consolidator {
         public List<String> dirs;
         public long targetSizeBytes;
         public String extension;
+        public PailStructure<?> structure;
+        public String rootDir;
 
 
         public ConsolidatorArgs(String fsUri, RecordStreamFactory streams, PathLister pathLister,
-            List<String> dirs, long targetSizeBytes, String extension) {
+                                List<String> dirs, long targetSizeBytes, String extension, PailStructure<?> structure, String rootDir) {
             this.fsUri = fsUri;
             this.streams = streams;
             this.pathLister = pathLister;
             this.dirs = dirs;
             this.targetSizeBytes = targetSizeBytes;
             this.extension = extension;
+            this.structure = structure;
+            this.rootDir = rootDir;
         }
     }
 
     public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
-        PathLister pathLister, long targetSizeBytes) throws IOException {
-        consolidate(fs, targetDir, streams, pathLister, targetSizeBytes, "");
+        PathLister pathLister, long targetSizeBytes, PailStructure<?> structure, String rootDir) throws IOException {
+        consolidate(fs, targetDir, streams, pathLister, targetSizeBytes, "", structure, rootDir);
     }
 
     public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
-        PathLister pathLister, String extension) throws IOException {
-        consolidate(fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, extension);
+        PathLister pathLister, String extension, PailStructure<?> structure, String rootDir) throws IOException {
+        consolidate(fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, extension, structure, rootDir);
     }
 
     public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
-        PathLister pathLister) throws IOException {
-        consolidate(fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, "");
+        PathLister pathLister, PailStructure<?> structure, String rootDir) throws IOException {
+        consolidate(fs, targetDir, streams, pathLister, DEFAULT_CONSOLIDATION_SIZE, "", structure, rootDir);
     }
 
-    public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams,
-        PathLister pathLister, long targetSizeBytes, String extension) throws IOException {
+    public static void consolidate(FileSystem fs, String targetDir, RecordStreamFactory streams, PathLister pathLister,
+                                   long targetSizeBytes, String extension, PailStructure<?> structure, String rootDir) throws IOException {
         List<String> dirs = new ArrayList<String>();
         dirs.add(targetDir);
-        consolidate(fs, streams, pathLister, dirs, targetSizeBytes, extension);
+        consolidate(fs, streams, pathLister, dirs, targetSizeBytes, extension, structure, rootDir);
     }
 
     private static String getDirsString(List<String> targetDirs) {
@@ -82,10 +87,10 @@ public class Consolidator {
     }
 
     public static void consolidate(FileSystem fs, RecordStreamFactory streams, PathLister lister, List<String> dirs,
-        long targetSizeBytes, String extension) throws IOException {
+                                   long targetSizeBytes, String extension, PailStructure<?> structure, String rootDir) throws IOException {
         JobConf conf = new JobConf(fs.getConf(), Consolidator.class);
         String fsUri = fs.getUri().toString();
-        ConsolidatorArgs args = new ConsolidatorArgs(fsUri, streams, lister, dirs, targetSizeBytes, extension);
+        ConsolidatorArgs args = new ConsolidatorArgs(fsUri, streams, lister, dirs, targetSizeBytes, extension, structure, rootDir);
         Utils.setObject(conf, ARGS, args);
 
         conf.setJobName("Consolidator: " + getDirsString(dirs));
@@ -337,19 +342,59 @@ public class Consolidator {
             return ret;
         }
 
-        private List<InputSplit> createSplits(FileSystem fs, List<Path> files,
-            String target, long targetSize, String extension) throws IOException {
-            List<PathSizePair> working = getFileSizePairs(fs, files);
-            List<InputSplit> ret = new ArrayList<InputSplit>();
-            List<List<PathSizePair>> splits = SubsetSum.split(working, targetSize);
-            for(List<PathSizePair> c: splits) {
-                if(c.size()>1) {
-                    String rand = UUID.randomUUID().toString();
-                    String targetFile = new Path(target,
-                        "" + rand.charAt(0) + rand.charAt(1) + "/cons" +
-                        rand + extension).toString();
-                    ret.add(new ConsolidatorSplit(pathsToStrs(c), targetFile));
+        private Map<String, List<Path>> groupByParentPaths(PailStructure structure, List<Path> files, String pailRoot) {
+            HashMap<String, List<Path>> results = new HashMap<String, List<Path>>();
+            for (Path file : files) {
+                String parentLocation = getParent(structure, file, pailRoot);
+                if (results.containsKey(parentLocation)) {
+                    results.get(parentLocation).add(file);
+                } else {
+                    ArrayList<Path> list = new ArrayList<Path>();
+                    list.add(file);
+                    results.put(parentLocation, list);
+                }
+            }
 
+            return results;
+        }
+
+        private String getParent(PailStructure<?> structure, Path path, String pailRoot) {
+            Path lastParentPath = path;
+
+            boolean isValid = true;
+            boolean withinPailRoot = true;
+            while (lastParentPath.getParent() != null && isValid && withinPailRoot) {
+                Path tempParent = lastParentPath.getParent();
+                String relative = Utils.makeRelative(new Path(pailRoot), tempParent);
+                withinPailRoot = !relative.equals("");
+                isValid = withinPailRoot ?
+                        structure.isValidTarget(Utils.componentize(relative).toArray(new String[0])) :
+                        structure.isValidTarget(relative);
+                // System.out.println("isValid - " + tempParent.toString() + " is " + isValid);
+                if(isValid) lastParentPath = tempParent;
+            }
+
+            // System.out.println("Returning parent for " + path + " as " + lastParentPath);
+            return lastParentPath.toString();
+        }
+
+        private List<InputSplit> createSplits(FileSystem fs, List<Path> files,
+                                              long targetSize, String extension, PailStructure<?> structure, String pailRoot) throws IOException {
+            Map<String, List<Path>> grouped = groupByParentPaths(structure, files, pailRoot);
+            List<InputSplit> ret = new ArrayList<InputSplit>();
+
+            for (String parentDir : grouped.keySet()) {
+                List<PathSizePair> working = getFileSizePairs(fs, grouped.get(parentDir));
+                List<List<PathSizePair>> splits = SubsetSum.split(working, targetSize);
+                for (List<PathSizePair> c : splits) {
+                    if (c.size() > 1) {
+                        String rand = UUID.randomUUID().toString();
+                        String targetFile = new Path(parentDir,
+                                "" + rand.charAt(0) + rand.charAt(1) + "/cons" +
+                                        rand + extension).toString();
+                        ret.add(new ConsolidatorSplit(pathsToStrs(c), targetFile));
+
+                    }
                 }
             }
             Collections.sort(ret, new Comparator<InputSplit>() {
@@ -367,8 +412,8 @@ public class Consolidator {
             List<InputSplit> ret = new ArrayList<InputSplit>();
             for(String dir: dirs) {
                 FileSystem fs = Utils.getFS(dir, conf);
-                ret.addAll(createSplits(fs, lister.getFiles(fs,dir),
-                    dir, args.targetSizeBytes, args.extension));
+                ret.addAll(createSplits(fs, lister.getFiles(fs, dir),
+                        args.targetSizeBytes, args.extension, args.structure, args.rootDir));
             }
             return ret.toArray(new InputSplit[ret.size()]);
         }
