@@ -502,12 +502,11 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         toCheck.add("");
         PailStructure structure = getSpec().getStructure();
         List<String> consolidatedirs = new ArrayList<String>();
+        consolidatedirs.add(toFullPath(""));
         while(toCheck.size()>0) {
             String dir = toCheck.remove(0);
             List<String> dirComponents = componentsFromRoot(dir);
-            if(structure.isValidTarget(dirComponents.toArray(new String[dirComponents.size()]))) {
-                consolidatedirs.add(toFullPath(dir));
-            } else {
+            if(!structure.isValidTarget(dirComponents.toArray(new String[dirComponents.size()]))) {
                 FileStatus[] contents = listStatus(new Path(toFullPath(dir)));
                 for(FileStatus f: contents) {
                     if(!f.isDir()) {
@@ -523,7 +522,7 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
             }
         }
 
-        Consolidator.consolidate(_fs, _format, new PailPathLister(false), consolidatedirs, maxSize, EXTENSION);
+        Consolidator.consolidate(_fs, _format, new PailPathLister(false), consolidatedirs, maxSize, EXTENSION, structure, getRoot());
     }
 
     @Override
