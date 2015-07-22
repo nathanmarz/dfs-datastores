@@ -1,1 +1,1 @@
-version in ThisBuild := "1.5.8-indix-SNAPSHOT"
+version in ThisBuild := "1.6.0-indix"
