@@ -40,8 +40,9 @@ public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
                 this.os = os;
             }
         }
-        
+
         private Pail _pail;
+        private String _unique;
         private Map<String, OpenAttributeFile> _outputters = new HashMap<String, OpenAttributeFile>();
         private int writtenRecords = 0;
 
@@ -55,6 +56,7 @@ public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
             // this is a hack to get the work output directory since it's not exposed directly. instead it only
             // provides a path to a particular file.
             _pail = Pail.create(fs, FileOutputFormat.getTaskOutputPath(conf, unique).getParent().toString(), spec, false);
+            _unique = unique;
         }
 
         public void write(Text k, BytesWritable v) throws IOException {
@@ -66,7 +68,12 @@ public class  PailOutputFormat extends FileOutputFormat<Text, BytesWritable> {
                 _outputters.remove(attr);
             }
             if(oaf==null) {
-                String filename = UUID.randomUUID().toString();
+                String filename;
+                if(!attr.isEmpty()) {
+                    filename = attr + "/" + _unique + UUID.randomUUID().toString();
+                } else {
+                    filename = _unique + UUID.randomUUID().toString();
+                }
                 LOG.info("Opening " + filename + " for attribute " + attr);
                 //need overwrite for situations where regular FileOutputCommitter isn't used (like S3)
                 oaf = new OpenAttributeFile(attr, filename, _pail.openWrite(filename, true));
