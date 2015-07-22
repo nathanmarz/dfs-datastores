@@ -117,4 +117,16 @@ public class PailTapTest extends FSTestCase {
             assertTrue(e.getCause() instanceof IllegalArgumentException);
         }
     }
+
+    public void testWriteToExistingPail_ShouldWork_IfFailOnExistsIsFalse() throws Exception {
+        String sourcePath = getTmpPath(fs, "source");
+        String sinkPath = getTmpPath(fs, "sink");
+        emitToPail(Pail.create(fs, sourcePath), "a", "b", "c");
+        Pail sink = Pail.create(fs, sinkPath);
+        PailTapOptions sinkTapOptions = new PailTapOptions();
+        sinkTapOptions.failOnExists = false;
+        identityFlow(new PailTap(sourcePath), new PailTap(sinkPath, sinkTapOptions), new Fields("bytes"));
+        boolean nonEmptySink = !sink.isEmpty();
+        assertTrue(nonEmptySink);
+    }
 }

@@ -44,6 +44,7 @@ public class PailTap extends Hfs {
     public String fieldName = "bytes";
     public List<String>[] attrs = null;
     public PailPathLister lister = null;
+    public boolean failOnExists = true;
 
     public PailTapOptions() {
 
@@ -123,7 +124,7 @@ public class PailTap extends Hfs {
       conf.setOutputFormat(PailOutputFormat.class);
       Utils.setObject(conf, PailOutputFormat.SPEC_ARG, getSpec());
       try {
-        Pail.create(getFileSystem(conf), _pailRoot, getSpec(), true);
+        Pail.create(getFileSystem(conf), _pailRoot, getSpec(), _options.failOnExists);
       } catch (IOException e) {
         throw new TapException(e);
       }
