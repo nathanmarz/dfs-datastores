@@ -121,7 +121,7 @@ public class SequenceFileFormat implements PailFormat {
         }
 
         private void ifBlockCompressed() throws IOException {
-            SequenceFile.Reader reader = new SequenceFile.Reader(FileSystem.get(conf), split.getPath(), conf);
+            SequenceFile.Reader reader = new SequenceFile.Reader(split.getPath().getFileSystem(conf), split.getPath(), conf);
             this.isBlockCompressed = reader.isBlockCompressed();
             reader.close();
         }
