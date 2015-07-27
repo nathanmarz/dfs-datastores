@@ -309,7 +309,7 @@ public abstract class AbstractPail {
         do {
             FileStatus item = outQ.poll();
             if(item == null) continue;
-            if (item.isFile()) {
+            if (!item.isDir()) {
                 String filename = relativizePaths(abs, item.getPath());
                 for (String extension : extensions) {
                     if (filename.endsWith(extension) && item.getLen() > 0) {
