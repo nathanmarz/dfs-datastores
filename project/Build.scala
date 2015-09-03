@@ -103,11 +103,7 @@ object Build extends Build {
       "org.slf4j" % "slf4j-api" % "1.6.6",
       "jvyaml" % "jvyaml" % "1.0.0",
       "com.google.guava" % "guava" % "13.0",
-      "org.apache.hadoop" % "hadoop-core" % "2.0.0-mr1-cdh4.2.1",
-      "org.apache.hadoop" % "hadoop-client" % "2.0.0-mr1-cdh4.2.1",
-      "org.apache.hadoop" % "hadoop-common" % "2.0.0-cdh4.2.1",
-      "org.apache.hadoop" % "hadoop-hdfs" % "2.0.0-cdh4.2.1",
-      //"org.apache.hadoop" % "hadoop-mapreduce" % "2.0.0-cdh4.2.1",
+      "org.apache.hadoop" % "hadoop-client" % "2.0.0-mr1-cdh4.2.1" % "provided",
       "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.15",
       "org.scalatest" %% "scalatest" % "2.2.0" % "test"
     ).map(_.exclude("commons-daemon", "commons-daemon"))
