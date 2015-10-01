@@ -2,6 +2,7 @@ package com.backtype.hadoop.pail;
 
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.support.Retry;
 import com.backtype.support.Utils;
 import com.google.common.util.concurrent.Futures;
 import org.apache.hadoop.fs.FileStatus;
@@ -56,9 +57,13 @@ public abstract class AbstractPail {
 
         public void close() throws IOException {
             delegate.close();
-            if(!rename(tempFile, finalFile)) {
-                throw new IOException("Unable to atomically create pailfile with rename " + tempFile.toString());
+
+            Retry renameRetry = new Retry(3);
+            while(renameRetry.shouldRetry()) {
+                if (rename(tempFile, finalFile))
+                    return;
             }
+            throw new IOException("Unable to atomically create pailfile with rename " + tempFile.toString());
         }
 
         @Override
@@ -324,7 +329,7 @@ public abstract class AbstractPail {
             }
         } while (executorService.getCompletedTaskCount() < tasksSubmitted || !outQ.isEmpty());
         executorService.shutdown();
-        LOGGER.info("Total # of files under "+abs.toString()+" = "+files.size()+", took: "+(System.currentTimeMillis()-startFileListing)+" millis");
+        LOGGER.info("Total # of files under " + abs.toString() + " = " + files.size() + ", took: " + (System.currentTimeMillis() - startFileListing) + " millis");
     }
 
     /*Pass the base dir to be relified inside. The item in the outQ should be relified wrt to its base*/
