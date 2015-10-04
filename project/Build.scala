@@ -1,11 +1,10 @@
 import sbt._
 import Keys._
-import sbtgitflow.ReleasePlugin._
 
 object Build extends Build {
   val ScalaVersion = "2.10.4"
 
-  val sharedSettings = Project.defaultSettings ++ releaseSettings ++ Seq(
+  val sharedSettings = Project.defaultSettings ++ Seq(
     organization := "com.backtype",
 
     crossPaths := false,
@@ -14,7 +13,7 @@ object Build extends Build {
     javacOptions in doc := Seq("-source", "1.7"),
 
     libraryDependencies ++= Seq(
-      "com.novocode" % "junit-interface" % "0.10-M2" % "test",
+      "com.novocode" % "junit-interface" % "0.11" % "test",
       // To silence warning in test logs. Library should depend only on the API.
       "org.slf4j" % "slf4j-log4j12" % "1.7.5" % "test"
     ),
@@ -50,6 +49,8 @@ object Build extends Build {
     },
 
     //publishTo := Some(Resolver.file("file",  new File( Path.userHome.absolutePath + "/mvn_repo/repository/releases" )) ),
+
+    testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
 
     pomExtra := (
       <url>https://github.com/nathanmarz/dfs-datastores</url>
@@ -88,7 +89,7 @@ object Build extends Build {
     base = file("."),
     settings = sharedSettings
   ).settings(
-    test := { },
+//    test := { },
     publish := { }, // skip publishing for this root project.
     publishLocal := { }
   ).aggregate(core, cascading)
