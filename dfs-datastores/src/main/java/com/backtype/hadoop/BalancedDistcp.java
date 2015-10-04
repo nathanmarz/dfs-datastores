@@ -2,6 +2,7 @@ package com.backtype.hadoop;
 
 import com.backtype.hadoop.FileCopyInputFormat.FileCopyArgs;
 import com.backtype.support.Utils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -19,20 +20,21 @@ public class BalancedDistcp {
     private static Thread shutdownHook;
     private static RunningJob job = null;
 
-    public static void distcp(String qualifiedSource, String qualifiedDest, int renameMode, PathLister lister) throws IOException {
-        distcp(qualifiedSource, qualifiedDest, renameMode, lister, "");
-    }
-
-    public static void distcp(String qualSource, String qualDest, int renameMode, PathLister lister, String extensionOnRename) throws IOException {
+    public static void distcp(String qualSource, String qualDest, int renameMode, PathLister lister, String extensionOnRename, Configuration conf) throws IOException {
         FileCopyArgs args = new FileCopyArgs(qualSource, qualDest, renameMode, lister, extensionOnRename);
-        distcp(args);
+        distcp(args, conf);
     }
 
-    public static void distcp(FileCopyArgs args) throws IOException {
+    public static void distcp(FileCopyArgs args, Configuration userConf) throws IOException {
         if(!Utils.hasScheme(args.source) || !Utils.hasScheme(args.dest))
             throw new IllegalArgumentException("source and dest must have schemes " + args.source + " " + args.dest);
 
-        JobConf conf = new JobConf(BalancedDistcp.class);
+        JobConf conf;
+        if(userConf != null)
+            conf = new JobConf(userConf, BalancedDistcp.class);
+        else
+            conf = new JobConf(BalancedDistcp.class);
+
         Utils.setObject(conf, FileCopyInputFormat.ARGS, args);
 
         conf.setJobName("BalancedDistcp: " + args.source + " -> " + args.dest);

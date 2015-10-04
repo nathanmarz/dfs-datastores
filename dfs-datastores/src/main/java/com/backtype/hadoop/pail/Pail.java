@@ -410,9 +410,9 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
         String sourceQual = getQualifiedRoot(p);
         String destQual = getQualifiedRoot(this);
         if(formatsSame) {
-            BalancedDistcp.distcp(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), EXTENSION);
+            BalancedDistcp.distcp(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), EXTENSION, args.conf);
         } else {
-            Coercer.coerce(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), p.getFormat(), getFormat(), EXTENSION);
+            Coercer.coerce(sourceQual, destQual, args.renameMode, new PailPathLister(args.copyMetadata), p.getFormat(), getFormat(), EXTENSION, args.conf);
         }
     }
 
