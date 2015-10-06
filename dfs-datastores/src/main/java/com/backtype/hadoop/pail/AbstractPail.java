@@ -4,6 +4,8 @@ import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.support.Retry;
 import com.backtype.support.Utils;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.util.concurrent.Futures;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -58,12 +60,29 @@ public abstract class AbstractPail {
         public void close() throws IOException {
             delegate.close();
 
-            Retry renameRetry = new Retry(3);
-            while(renameRetry.shouldRetry()) {
-                if (rename(tempFile, finalFile))
-                    return;
+            if(Retry.retry(3, null,
+                new Function<Object, Boolean>() {
+                    @Override
+                    public Boolean apply(Object obj) {
+                        try {
+                            return rename(tempFile, finalFile);
+                        } catch (IOException e) {
+                            LOGGER.warn("Retrying...");
+                        }
+                        return false;
+                    }
+                },
+                new Predicate<Boolean>() {
+                    @Override
+                    public boolean apply(Boolean aBoolean) {
+                        return aBoolean;
+                    }
+                }) != null)
+                return;
+            else
+            {
+                throw new IOException("Unable to atomically create pailfile with rename " + tempFile.toString());
             }
-            throw new IOException("Unable to atomically create pailfile with rename " + tempFile.toString());
         }
 
         @Override
