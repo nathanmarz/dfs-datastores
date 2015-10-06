@@ -7,15 +7,12 @@ import junit.framework.TestCase;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ganesh on 06/10/15.
- */
 public class RetryTest extends TestCase {
 
     public void testRetryTimes() {
         final List<String> retry = new ArrayList<String>();
 
-        Retry.retry(3, null, new Function<Object, Boolean>() {
+        boolean result = Retry.retry(3, null, new Function<Object, Boolean>() {
             @Override
             public Boolean apply(Object obj) {
                 try {
@@ -32,8 +29,9 @@ public class RetryTest extends TestCase {
                 return aBoolean;
             }
         });
-        
-        assertEquals(retry.size(), 3);
+
+        assertEquals(3, retry.size());
+        assertEquals(false, result);
     }
 
 }

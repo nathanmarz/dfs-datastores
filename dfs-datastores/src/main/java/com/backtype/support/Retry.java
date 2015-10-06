@@ -7,19 +7,18 @@ public class Retry {
 
     public static <P, Q> Q retry(int maxRetries, P argument, Function<P, Q> action, Predicate<Q> isSuccess) {
         int retries = 1;
+        Q result = null;
         while (retries <= maxRetries) {
-            Q result = action.apply(argument);
+            result = action.apply(argument);
             if (isSuccess.apply(result))
                 return result;
             try {
-                Thread.sleep(1000 * 1);
-            }
-            catch(InterruptedException e)
-            {
+                Thread.sleep(1000 * retries);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             retries++;
         }
-        return null;
+        return result;
     }
 }
