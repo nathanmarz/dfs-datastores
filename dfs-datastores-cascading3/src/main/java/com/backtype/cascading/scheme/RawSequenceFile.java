@@ -2,6 +2,7 @@ package com.backtype.cascading.scheme;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
@@ -27,20 +28,20 @@ public class RawSequenceFile
     conf.setInputFormat(SequenceFileInputFormat.class);
   }
 
-  @Override public void sourceConfInit(FlowProcess<JobConf> jobConfFlowProcess,
+  @Override public void sourceConfInit(FlowProcess<? extends JobConf> jobConfFlowProcess,
       Tap<JobConf, RecordReader, OutputCollector> jobConfRecordReaderOutputCollectorTap,
       JobConf entries) {
     //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
-  public void sinkConfInit(FlowProcess<JobConf> prcs,
+  public void sinkConfInit(FlowProcess<? extends JobConf> prcs,
       Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
     throw new TapException("cannot use as a sink");
   }
 
   @Override
-  public void sourcePrepare(FlowProcess<JobConf> flowProcess,
+  public void sourcePrepare(FlowProcess<? extends JobConf> flowProcess,
       SourceCall<Object[], RecordReader> sourceCall) {
     sourceCall.setContext(new Object[2]);
 
@@ -49,7 +50,7 @@ public class RawSequenceFile
   }
 
   @Override
-  public boolean source(FlowProcess<JobConf> prcs, SourceCall<Object[], RecordReader> sourceCall)
+  public boolean source(FlowProcess<? extends JobConf> prcs, SourceCall<Object[], RecordReader> sourceCall)
       throws IOException {
 
     Object key = sourceCall.getContext()[0];
@@ -66,7 +67,7 @@ public class RawSequenceFile
   }
 
   @Override
-  public void sink(FlowProcess<JobConf> prcs, SinkCall<Object[], OutputCollector> sc)
+  public void sink(FlowProcess<? extends JobConf> prcs, SinkCall<Object[], OutputCollector> sc)
       throws IOException {
     throw new TapException("cannot use as a sink");
   }

@@ -2,6 +2,7 @@ package com.backtype.cascading.tap;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
@@ -27,25 +28,25 @@ public class NullTap extends Tap {
     }
 
     @Override
-    public void sourceConfInit(FlowProcess<JobConf> prcs,
+    public void sourceConfInit(FlowProcess<? extends JobConf> prcs,
         Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
       throw new IllegalArgumentException("Cannot use as a source");
     }
 
     @Override
-    public void sinkConfInit(FlowProcess<JobConf> prcs,
+    public void sinkConfInit(FlowProcess<? extends JobConf> prcs,
         Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
       conf.setOutputFormat(NullOutputFormat.class);
     }
 
     @Override
-    public boolean source(FlowProcess<JobConf> prcs, SourceCall<Object[], RecordReader> sc)
+    public boolean source(FlowProcess<? extends JobConf> prcs, SourceCall<Object[], RecordReader> sc)
         throws IOException {
       throw new IllegalArgumentException("cannot source");
     }
 
     @Override
-    public void sink(FlowProcess<JobConf> prcs, SinkCall<Object[], OutputCollector> sourceCall)
+    public void sink(FlowProcess<? extends JobConf> prcs, SinkCall<Object[], OutputCollector> sourceCall)
         throws IOException {
     }
   }

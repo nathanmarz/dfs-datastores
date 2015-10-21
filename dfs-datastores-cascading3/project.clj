@@ -8,7 +8,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[com.backtype/dfs-datastores ~VERSION]
                  [org.slf4j/slf4j-log4j12 "1.6.6"]
-                 [cascading/cascading-hadoop "2.5.3"
+                 [cascading/cascading-hadoop "3.0.2"
                   :exclusions [org.apache.hadoop/hadoop-core]]]
   :repositories {"conjars" "http://conjars.org/repo"}
   :deploy-repositories {"releases" {:url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
@@ -33,9 +33,9 @@
   :java-source-paths ["src/main/java" "src/test/java"]
   :junit ["src/test/java"]
   :profiles {:dev
-             {:plugins [[lein-junit "1.1.5"]]}
+             {:plugins [[lein-junit "1.1.8"]]}
              :provided
-             {:dependencies [[org.apache.hadoop/hadoop-core "1.2.1"]]}}
+             {:dependencies [[org.apache.hadoop/hadoop-core "1.2.1" :exclude[ant/ant]]]}}
   :classifiers {:javadoc {:java-source-paths ^:replace []
                           :source-paths ^:replace []
                           :resource-paths ^:replace []}

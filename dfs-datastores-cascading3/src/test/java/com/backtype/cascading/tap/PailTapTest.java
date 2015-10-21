@@ -1,5 +1,6 @@
 package com.backtype.cascading.tap;
 
+import org.apache.log4j.Logger;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import com.backtype.cascading.tap.PailTap.PailTapOptions;
 import com.backtype.hadoop.pail.Pail;
@@ -29,6 +30,7 @@ import static com.backtype.support.TestUtils.*;
 
 
 public class PailTapTest extends FSTestCase {
+    private static Logger LOG = Logger.getLogger(PailTapTest.class);
 
     protected static class Add1 extends BaseOperation implements Function {
         public Add1() {
@@ -37,7 +39,7 @@ public class PailTapTest extends FSTestCase {
 
         public void operate(FlowProcess fp, FunctionCall fc) {
             TupleEntry t = fc.getArguments();
-            String res = new String(Utils.getBytes((BytesWritable) t.get(0))) + "1";
+            String res = new String(Utils.getBytes((BytesWritable) t.getObject(0))) + "1";
             fc.getOutputCollector().add(new Tuple(new BytesWritable(res.getBytes())));
         }
 
@@ -115,7 +117,11 @@ public class PailTapTest extends FSTestCase {
             identityFlow(new PailTap(sourcePath), new PailTap(sinkPath), new Fields("bytes"));
             fail("should fail!");
         } catch (FlowException e) {
-            assertTrue(e.getCause() instanceof IllegalArgumentException);
+            /*LOG.error(e.getCause());
+            assertTrue(e.getCause() instanceof IllegalArgumentException);             
+                */
+            /* in cascading3, the cause is no longer an IllegalArgumentException but null, but the main point is that
+                we DO get a FlowException. */    
         }
     }
 }

@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
@@ -66,7 +67,7 @@ public class PailTap extends Hfs {
   }
 
   public class PailScheme
-      extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
+      extends Scheme<Configuration, RecordReader, OutputCollector, Object[], Object[]> {
     private PailTapOptions _options;
 
     public PailScheme(PailTapOptions options) {
@@ -113,31 +114,37 @@ public class PailTap extends Hfs {
     }
 
     @Override
-    public void sourceConfInit(FlowProcess<JobConf> process,
-        Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
+    public void sourceConfInit(FlowProcess<? extends Configuration> process,
+        Tap<Configuration, RecordReader, OutputCollector> tap, Configuration conf) {
       Pail p;
       try {
         p = new Pail(_pailRoot, conf); //make sure it exists
       } catch (IOException e) {
         throw new TapException(e);
       }
-      conf.setInputFormat(p.getFormat().getInputFormatClass());
-      PailFormatFactory.setPailPathLister(conf, _options.lister);
+      
+      JobConf jobConf = new JobConf(conf);
+      
+      jobConf.setInputFormat(p.getFormat().getInputFormatClass());
+      PailFormatFactory.setPailPathLister(jobConf, _options.lister);
     }
 
-    @Override public void sinkConfInit(FlowProcess<JobConf> flowProcess,
-        Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
-      conf.setOutputFormat(PailOutputFormat.class);
-      Utils.setObject(conf, PailOutputFormat.SPEC_ARG, getSpec());
+    @Override public void sinkConfInit(FlowProcess<? extends Configuration> flowProcess,
+        Tap<Configuration, RecordReader, OutputCollector> tap, Configuration conf) {
+
+      JobConf jobConf = new JobConf(conf);
+
+      jobConf.setOutputFormat(PailOutputFormat.class);
+      Utils.setObject(jobConf, PailOutputFormat.SPEC_ARG, getSpec());
       try {
-        Pail.create(getFileSystem(conf), _pailRoot, getSpec(), true);
+        Pail.create(getFileSystem(jobConf), _pailRoot, getSpec(), true);
       } catch (IOException e) {
         throw new TapException(e);
       }
     }
 
     @Override
-    public void sourcePrepare(FlowProcess<JobConf> flowProcess,
+    public void sourcePrepare(FlowProcess<? extends Configuration> flowProcess,
         SourceCall<Object[], RecordReader> sourceCall) {
       sourceCall.setContext(new Object[2]);
 
@@ -146,7 +153,7 @@ public class PailTap extends Hfs {
     }
 
     @Override
-    public boolean source(FlowProcess<JobConf> process,
+    public boolean source(FlowProcess<? extends Configuration> process,
         SourceCall<Object[], RecordReader> sourceCall) throws IOException {
       Object k = sourceCall.getContext()[0];
       Object v = sourceCall.getContext()[1];
@@ -159,7 +166,7 @@ public class PailTap extends Hfs {
     }
 
     @Override
-    public void sink(FlowProcess<JobConf> process, SinkCall<Object[], OutputCollector> sinkCall)
+    public void sink(FlowProcess<? extends Configuration> process, SinkCall<Object[], OutputCollector> sinkCall)
         throws IOException {
       TupleEntry tuple = sinkCall.getOutgoingEntry();
 
@@ -212,44 +219,46 @@ public class PailTap extends Hfs {
   }
 
   @Override
-  public long getModifiedTime(JobConf conf) throws IOException {
+  public long getModifiedTime(Configuration conf) throws IOException {
     // TODO: We should either set sinkMode.REPLACE or return something real here when used as a source.
     return 0;
   }
 
   @Override
-  public boolean deleteResource(JobConf conf) throws IOException {
+  public boolean deleteResource(Configuration conf) throws IOException {
     throw new UnsupportedOperationException();
   }
 
 
   //no good way to override this, just had to copy/paste and modify
   @Override
-  public void sourceConfInit(FlowProcess<JobConf> process, JobConf conf) {
+  public void sourceConfInit(FlowProcess<? extends Configuration> process, Configuration conf) {
     try {
-      Path root = getQualifiedPath(conf);
+      JobConf jobConf = new JobConf(conf);
+    
+      Path root = getQualifiedPath(jobConf);
       if (_options.attrs != null && _options.attrs.length > 0) {
-        Pail pail = new Pail(_pailRoot, conf);
+        Pail pail = new Pail(_pailRoot, jobConf);
         for (List<String> attr : _options.attrs) {
           String rel = Utils.join(attr, "/");
           pail.getSubPail(rel); //ensure the path exists
           Path toAdd = new Path(root, rel);
           LOG.info("Adding input path " + toAdd.toString());
-          FileInputFormat.addInputPath(conf, toAdd);
+          FileInputFormat.addInputPath(jobConf, toAdd);
         }
       } else {
-        FileInputFormat.addInputPath(conf, root);
+        FileInputFormat.addInputPath(jobConf, root);
       }
 
-      getScheme().sourceConfInit(process, this, conf);
-      makeLocal(conf, getQualifiedPath(conf), "forcing job to local mode, via source: ");
-      TupleSerialization.setSerializations(conf);
+      getScheme().sourceConfInit(process, this, jobConf);
+      makeLocal(jobConf, getQualifiedPath(jobConf), "forcing job to local mode, via source: ");
+      TupleSerialization.setSerializations(jobConf);
     } catch (IOException e) {
       throw new TapException(e);
     }
   }
 
-  private void makeLocal(JobConf conf, Path qualifiedPath, String infoMessage) {
+  private void makeLocal(Configuration conf, Path qualifiedPath, String infoMessage) {
     if (!conf.get("mapred.job.tracker", "").equalsIgnoreCase("local") && qualifiedPath.toUri()
         .getScheme().equalsIgnoreCase("file")) {
       if (LOG.isInfoEnabled()) { LOG.info(infoMessage + toString()); }
@@ -259,7 +268,7 @@ public class PailTap extends Hfs {
   }
 
   @Override
-  public void sinkConfInit(FlowProcess<JobConf> process, JobConf conf) {
+  public void sinkConfInit(FlowProcess<? extends Configuration> process, Configuration conf) {
     if (_options.attrs != null && _options.attrs.length > 0) {
       throw new TapException("can't declare attributes in a sink");
     }
@@ -268,7 +277,7 @@ public class PailTap extends Hfs {
   }
 
   @Override
-  public boolean commitResource(JobConf conf) throws IOException {
+  public boolean commitResource(Configuration conf) throws IOException {
     Pail p = Pail.create(_pailRoot, ((PailScheme) getScheme()).getSpec(), false);
     FileSystem fs = p.getFileSystem();
     Path tmpPath = new Path(_pailRoot, "_temporary");
