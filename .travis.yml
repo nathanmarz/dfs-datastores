@@ -12,7 +12,7 @@ lein: lein2
 script: lein2 sub junit
 before_install: lein2 sub install
 jdk:
-  - openjdk6
+  - openjdk8
 notifications:
   email:
     - soren@dopeness.org
