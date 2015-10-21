@@ -6,6 +6,7 @@
 #
 # http://about.travis-ci.org/docs/user/build-configuration/
 
+sudo: false
 language: clojure
 lein: lein2
 script: lein2 sub junit
