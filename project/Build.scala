@@ -107,7 +107,11 @@ object Build extends Build {
       "org.apache.hadoop" % "hadoop-client" % "2.0.0-mr1-cdh4.2.1" % "provided",
       "org.apache.hadoop" % "hadoop-core" % "2.0.0-mr1-cdh4.2.1" % "test",
       "com.hadoop.gplcompression" % "hadoop-lzo" % "0.4.15",
-      "org.scalatest" %% "scalatest" % "2.2.0" % "test"
+      "org.scalatest" %% "scalatest" % "2.2.0" % "test",
+      "models" %% "models" % "2.0.175",
+      "org.apache.thrift" % "libthrift" % "0.8.0",
+      "com.twitter" % "scalding-args_2.10" % "0.15.0",
+      "org.scalaj" % "scalaj-time_2.9.2" % "0.6"
     ).map(_.exclude("commons-daemon", "commons-daemon"))
   )
 
@@ -122,5 +126,6 @@ object Build extends Build {
       "cascading" % "cascading-hadoop" % "2.0.7"
     )
   ).dependsOn(core)
+
 }
 
