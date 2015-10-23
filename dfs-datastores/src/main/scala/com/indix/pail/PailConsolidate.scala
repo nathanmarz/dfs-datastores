@@ -2,13 +2,12 @@ package com.indix.pail
 
 import com.backtype.hadoop.pail.Pail
 import com.indix.commons.FSUtils
-import com.indix.models.pail.{DateHelper, ThriftPail}
 import com.twitter.scalding.Args
-import models.util.PailSpecification
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
+import util.{DateTimeFormatter, DateHelper}
 
 class PailConsolidate(inputDir: String, subDir: String, pipelineLabel: String) extends FSUtils {
   val logger = LoggerFactory.getLogger(this.getClass)
@@ -48,7 +47,7 @@ object PailConsolidate {
   }
 }
 
-object IxPailConsolidator extends PailSpecification with FSUtils {
+object IxPailConsolidator extends FSUtils {
   def conf: Configuration = new Configuration()
 
   def main(argumentArr: Array[String]) = {
@@ -61,8 +60,8 @@ object IxPailConsolidator extends PailSpecification with FSUtils {
     val thisMoment = DateTime.now()
 
     def getSubDirToProcess(strategy: String, thisMoment: DateTime, i: Int) = strategy match {
-      case "hourly" => thisMoment.minusHours(i).toString(ThriftPail.dateTimeFormatter())
-      case "daily" => thisMoment.minusDays(i).toString(ThriftPail.dateTimeFormatter())
+      case "hourly" => thisMoment.minusHours(i).toString(DateTimeFormatter.format())
+      case "daily" => thisMoment.minusDays(i).toString(DateTimeFormatter.format())
       case "weekly" => DateHelper.weekInterval(thisMoment.minusWeeks(i))
       case "all" => ""
       case _ => throw new RuntimeException("Unsupported strategy. Supported ones are: hourly|daily|weekly|all")
