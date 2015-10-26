@@ -1,6 +1,5 @@
 package com.indix.pail
 
-import com.indix.commons.FSUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.scalatest.matchers.ShouldMatchers
@@ -48,7 +47,7 @@ class PailConsolidateTest extends FunSpec with FSUtils with ShouldMatchers with 
         val pailConsolidate = new PailConsolidate(inputDir, inputDir, "MANUAL") {
           override val writeLock = new PailLock(PailLockType.WRITE, "CONSOLIDATE", inputDir, 200)
           override def consolidateUsingPail(fileSystem: FileSystem, consolidationDir: String): Unit = {
-            exists(inputDir + "/.LOCK_WRITE_CONSOLIDATE") should be(true)
+            pathExists(inputDir + "/.LOCK_WRITE_CONSOLIDATE") should be(true)
           }
         }
 
@@ -68,7 +67,7 @@ class PailConsolidateTest extends FunSpec with FSUtils with ShouldMatchers with 
         val pailConsolidate = new PailConsolidate(inputDir, inputDir, "MANUAL") {
           override val writeLock = new PailLock(PailLockType.WRITE, "CONSOLIDATE", inputDir, 200)
           override def consolidateUsingPail(fileSystem: FileSystem, consolidationDir: String): Unit = {
-            exists(inputDir + "/.LOCK_WRITE_CONSOLIDATE") should be(true)
+            pathExists(inputDir + "/.LOCK_WRITE_CONSOLIDATE") should be(true)
             throw new RuntimeException("Something terrible happened.")
           }
         }

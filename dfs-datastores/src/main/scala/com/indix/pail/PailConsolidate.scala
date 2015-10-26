@@ -9,7 +9,7 @@ import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import util.{DateTimeFormatter, DateHelper}
 
-class PailConsolidate(inputDir: String, subDir: String, pipelineLabel: String) extends FSUtils {
+class PailConsolidate(inputDir: String, subDir: String, pipelineLabel: String)  {
   val logger = LoggerFactory.getLogger(this.getClass)
 
   def conf: Configuration = new Configuration()
