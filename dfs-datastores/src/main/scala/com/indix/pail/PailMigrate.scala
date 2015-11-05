@@ -2,21 +2,21 @@ package com.indix.pail
 
 import java.io.IOException
 
-import com.backtype.hadoop.pail.{PailOutputFormat, PailStructure}
 import com.backtype.hadoop.pail.SequenceFileFormat.SequenceFilePailInputFormat
+import com.backtype.hadoop.pail.{PailOutputFormat, PailRecordInfo, PailStructure}
 import com.backtype.support.Utils
 import com.indix.pail.PailMigrate.PailMigrateMapper
-import org.apache.hadoop.conf.{Configured, Configuration}
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{BytesWritable, Text}
 import org.apache.hadoop.mapred._
-import org.apache.hadoop.mapreduce.Job
-import org.apache.hadoop.util.{ToolRunner, Tool}
+import org.apache.hadoop.util.{Tool, ToolRunner}
 import org.apache.log4j.Logger
 
-class PailMigrate extends Configured with Tool {
+class PailMigrate extends Tool {
   val logger = Logger.getLogger(this.getClass)
   var configuration: Configuration = null
+
   /*
   * Takes an input pail location, an output pail location and a output pail spec
   * - Setup job to process input pail location
@@ -31,10 +31,10 @@ class PailMigrate extends Configured with Tool {
 
   override def run(args: Array[String]): Int = {
     if (args.length < 4) {
-      println(s"Usage: hadoop job <JAR> ${this.getClass.getCanonicalName} <input_dir> <output_dir> <pail_spec_class_fqcn> <record_type> [<keep_source_files>]")
+      println(s"Usage: hadoop job <JAR> ${this.getClass.getCanonicalName} <input_dir> <output_dir> <target_pail_spec_class_fqcn> <record_type> [<keep_source_files>]")
       println("input_dir - Input pail dir from which records need to be read and copied(or moved)")
       println("output_dir - Destination pail dir to which records need to be written to")
-      println("pail_spec_class_fqcn - Fully qualified class name of output PailStructure. This will be used to decide the partitioning scheme")
+      println("target_pail_spec_class_fqcn - Fully qualified class name of output PailStructure. This will be used to decide the partitioning scheme")
       println("record_type - Fully qualified class name of the record type. Eg: com.indix.models.ProductRecordPail")
       println("keep_source_files - set this to true to keep the source files. This is optional, Defaults to false, which means, source files will be removed if the job succeeds")
       System.exit(1)
@@ -47,7 +47,7 @@ class PailMigrate extends Configured with Tool {
 
     /*
     * Output location to write the records
-    * The output location will be (vertically) partitioned based on the `specClass` parameter
+    * The output location will be (vertically) partitioned based on the `targetSpecClass` parameter
     * */
     val outputDir = args(1)
 
@@ -55,14 +55,18 @@ class PailMigrate extends Configured with Tool {
     * FQCN of the PailStructure class. Note that, the class that's passed here should be available in the classpath
     * This is used to write individual records into appropriate vertical partitions in the output location
     * */
-    val specClass = args(2)
+    val targetSpecClass = args(2)
 
+    /*
+    * FQCN of the PailRecordInfo class. Note that, the class that's passed here should be available in the classpath
+    * This is used to write individual records into appropriate vertical partitions in the output location
+    * */
     val recordType = args(3)
     val recordClass = Class.forName(recordType)
 
     val keepSourceFiles = Option(args(4)).exists(_ equals "true")
 
-    val pailStructure = Class.forName(specClass).newInstance().asInstanceOf[PailStructure[recordClass.type]]
+    val targetPailStructure = Class.forName(targetSpecClass).newInstance().asInstanceOf[PailStructure[recordClass.type]]
 
     val jobConf = new JobConf(getConf)
     jobConf.setJobName("Pail Migration job (from one scheme to another)")
@@ -73,34 +77,34 @@ class PailMigrate extends Configured with Tool {
     jobConf.setOutputFormat(classOf[PailOutputFormat])
     FileOutputFormat.setOutputPath(jobConf, new Path(outputDir))
 
-    Utils.setObject(jobConf, PailMigrate.OUTPUT_STRUCTURE, pailStructure)
+    com.backtype.support.Utils.setObject(jobConf, PailMigrate.OUTPUT_STRUCTURE, targetPailStructure)
 
     jobConf.setMapperClass(classOf[PailMigrateMapper])
 
     jobConf.setNumReduceTasks(0)
     jobConf.setJarByClass(this.getClass)
 
-    jobConf.set("pail.migrate.record",recordType)
+    jobConf.set("pail.migrate.record", recordType)
 
     val job = new JobClient(jobConf).submitJob(jobConf)
 
     logger.info(s"Pail Migrate triggered for $inputDir")
-    logger.info("Submitted job "+job.getID)
+    logger.info("Submitted job " + job.getID)
 
-    while(!job.isComplete){
-      Thread.sleep(30*1000)
+    while (!job.isComplete) {
+      Thread.sleep(30 * 1000)
     }
 
-    if(!job.isSuccessful) throw new IOException("Pail Migrate failed")
+    if (!job.isSuccessful) throw new IOException("Pail Migrate failed")
 
     val path: Path = new Path(inputDir)
     val fs = path.getFileSystem(getConf)
 
-    if(!keepSourceFiles) {
+    if (!keepSourceFiles) {
       logger.info(s"Deleting path ${inputDir}")
       val deleteStatus = fs.delete(path, true)
 
-      if(!deleteStatus)
+      if (!deleteStatus)
         logger.warn(s"Deleting ${inputDir} failed. \n *** Please delete the source manually ***")
       else
         logger.info(s"Deleting ${inputDir} completed successfully.")
@@ -108,20 +112,19 @@ class PailMigrate extends Configured with Tool {
 
     0 // return success, failures throw an exception anyway!
   }
-
-  override def getConf: Configuration = configuration
+  override def getConf: Configuration = getConf
 
   override def setConf(configuration: Configuration): Unit = this.configuration = configuration
 }
 
-object PailMigrate  {
+object PailMigrate {
   val OUTPUT_STRUCTURE = "pail.migrate.output.structure"
 
-  class PailMigrateMapper extends Mapper[Text, BytesWritable, Text, BytesWritable] {
+  class PailMigrateMapper extends Mapper[PailRecordInfo, BytesWritable, Text, BytesWritable] {
     var outputPailStructure: PailStructure[Any] = null
     var recordClass: Class[_] = null
 
-    override def map(key: Text, value: BytesWritable, outputCollector: OutputCollector[Text, BytesWritable], reporter: Reporter): Unit = {
+    override def map(key: PailRecordInfo, value: BytesWritable, outputCollector: OutputCollector[Text, BytesWritable], reporter: Reporter): Unit = {
       val record = outputPailStructure.deserialize(value.getBytes)
       val key = new Text(Utils.join(outputPailStructure.getTarget(record), "/"))
       outputCollector.collect(key, value)
@@ -130,8 +133,8 @@ object PailMigrate  {
     override def close(): Unit = {}
 
     override def configure(jobConf: JobConf): Unit = {
-      recordClass = Class.forName(jobConf.get("pail.migrate.record"))
       outputPailStructure = Utils.getObject(jobConf, OUTPUT_STRUCTURE).asInstanceOf[PailStructure[Any]]
+      recordClass = Class.forName(jobConf.get("pail.migrate.record"))
     }
   }
 
