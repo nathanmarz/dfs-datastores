@@ -90,7 +90,6 @@ public class Consolidator {
         Utils.setObject(conf, ARGS, args);
 
         conf.setJobName("Consolidator: " + getDirsString(dirs));
-        LOG.debug("FileSystem {}",fs.getClass());
 
         conf.setInputFormat(ConsolidatorInputFormat.class);
         conf.setOutputFormat(NullOutputFormat.class);
@@ -158,9 +157,6 @@ public class Consolidator {
             for(int i=0; i<sourcesArr.get().length; i++) {
                 sources.add(new Path(((Text)sourcesArr.get()[i]).toString()));
             }
-            System.err.println("Filesystem class: "+fs.getClass());
-            System.out.println("Filesystem class: "+fs.getClass());
-            LOG.info("Filesystem class: "+fs.getClass());
             //must have failed after succeeding to create file but before task finished - this is valid
             //because path is selected with a UUID
             if(!fs.exists(finalFile)) {
@@ -215,9 +211,6 @@ public class Consolidator {
             args = (ConsolidatorArgs) Utils.getObject(conf, ARGS);
             try {
                 fs = Utils.getFS(args.fsUri, conf);
-                System.err.println("Filesystem class: "+fs.getClass());
-                System.out.println("Filesystem class: "+fs.getClass());
-                LOG.info("Filesystem class: "+fs.getClass());
             } catch(IOException e) {
                 throw new RuntimeException(e);
             }
