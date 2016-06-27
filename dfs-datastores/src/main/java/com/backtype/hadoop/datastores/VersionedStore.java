@@ -245,7 +245,9 @@ public class VersionedStore {
             new File(path).mkdirs();
         else {
             try {
-                fs.mkdirs(new Path(path));
+            	if (!fs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+            		fs.mkdirs(new Path(path));
+            	}
             } catch (AccessControlException e) {
                 throw new RuntimeException("Root directory doesn't exist, and user doesn't have the permissions " +
                                            "to create" + path + ".", e);

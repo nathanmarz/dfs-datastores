@@ -36,6 +36,9 @@ public abstract class AbstractLocalPail extends AbstractPail {
 
     @Override
     protected boolean mkdirs(Path path) throws IOException {
+    	if (_lfs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+    		return true;
+    	}
         return _lfs.mkdirs(path);
     }
 

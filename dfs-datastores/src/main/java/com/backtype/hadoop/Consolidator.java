@@ -22,6 +22,7 @@ import java.util.*;
 
 
 public class Consolidator {
+	private static final Logger LOG = LoggerFactory.getLogger(Consolidator.class);
     public static final long DEFAULT_CONSOLIDATION_SIZE = 1024*1024*127; //127 MB
     private static final String ARGS = "consolidator_args";
 
@@ -89,6 +90,7 @@ public class Consolidator {
         Utils.setObject(conf, ARGS, args);
 
         conf.setJobName("Consolidator: " + getDirsString(dirs));
+        LOG.debug("FileSystem {}",fs.getClass());
 
         conf.setInputFormat(ConsolidatorInputFormat.class);
         conf.setOutputFormat(NullOutputFormat.class);
@@ -156,18 +158,25 @@ public class Consolidator {
             for(int i=0; i<sourcesArr.get().length; i++) {
                 sources.add(new Path(((Text)sourcesArr.get()[i]).toString()));
             }
+            System.err.println("Filesystem class: "+fs.getClass());
+            System.out.println("Filesystem class: "+fs.getClass());
+            LOG.info("Filesystem class: "+fs.getClass());
             //must have failed after succeeding to create file but before task finished - this is valid
             //because path is selected with a UUID
             if(!fs.exists(finalFile)) {
                 Path tmpFile = new Path("/tmp/consolidator/" + UUID.randomUUID().toString());
-                fs.mkdirs(tmpFile.getParent());
+                if (!fs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+                	fs.mkdirs(tmpFile.getParent());
+                }
 
                 String status = "Consolidating " + sources.size() + " files into " + tmpFile.toString();
                 LOG.info(status);
                 rprtr.setStatus(status);
 
                 RecordStreamFactory fact = args.streams;
-                fs.mkdirs(finalFile.getParent());
+                if (!fs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+                	fs.mkdirs(finalFile.getParent());
+                }
 
                 RecordOutputStream os = fact.getOutputStream(fs, tmpFile);
                 for(Path i: sources) {
@@ -206,6 +215,9 @@ public class Consolidator {
             args = (ConsolidatorArgs) Utils.getObject(conf, ARGS);
             try {
                 fs = Utils.getFS(args.fsUri, conf);
+                System.err.println("Filesystem class: "+fs.getClass());
+                System.out.println("Filesystem class: "+fs.getClass());
+                LOG.info("Filesystem class: "+fs.getClass());
             } catch(IOException e) {
                 throw new RuntimeException(e);
             }

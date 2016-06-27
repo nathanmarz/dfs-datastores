@@ -44,14 +44,17 @@ public abstract class AbstractFileCopyMapper extends MapReduceBase implements Ma
                 return;
             }
         }
-
-        fsDest.mkdirs(tmpFile.getParent());
+        if (fsDest.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+        	fsDest.mkdirs(tmpFile.getParent());
+        }
 
         copyFile(fsSource, sourceFile, fsDest, tmpFile, rprtr);
 
         setStatus(rprtr, "Renaming " + tmpFile.toString() + " to " + finalFile.toString());
 
-        fsDest.mkdirs(finalFile.getParent());
+        if (!fsDest.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+        	fsDest.mkdirs(finalFile.getParent());
+        }
         if(!fsDest.rename(tmpFile, finalFile))
             throw new IOException("could not rename " + tmpFile.toString() + " to " + finalFile.toString());
 
