@@ -22,6 +22,7 @@ import java.util.*;
 
 
 public class Consolidator {
+	private static final Logger LOG = LoggerFactory.getLogger(Consolidator.class);
     public static final long DEFAULT_CONSOLIDATION_SIZE = 1024*1024*127; //127 MB
     private static final String ARGS = "consolidator_args";
 
@@ -160,14 +161,18 @@ public class Consolidator {
             //because path is selected with a UUID
             if(!fs.exists(finalFile)) {
                 Path tmpFile = new Path("/tmp/consolidator/" + UUID.randomUUID().toString());
-                fs.mkdirs(tmpFile.getParent());
+//                if (!fs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+                	fs.mkdirs(tmpFile.getParent());
+//                }
 
                 String status = "Consolidating " + sources.size() + " files into " + tmpFile.toString();
                 LOG.info(status);
                 rprtr.setStatus(status);
 
                 RecordStreamFactory fact = args.streams;
-                fs.mkdirs(finalFile.getParent());
+//                if (!fs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+                	fs.mkdirs(finalFile.getParent());
+//                }
 
                 RecordOutputStream os = fact.getOutputStream(fs, tmpFile);
                 for(Path i: sources) {

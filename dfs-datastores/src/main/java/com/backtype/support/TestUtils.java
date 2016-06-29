@@ -37,7 +37,9 @@ public class TestUtils {
     }
 
     public static String getTmpPath(FileSystem fs, String name) throws IOException {
-        fs.mkdirs(new Path(TMP_ROOT));
+    	if (!fs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+    		fs.mkdirs(new Path(TMP_ROOT));
+    	}
         String full = TMP_ROOT + "/" + name;
         if (fs.exists(new Path(full))) {
             fs.delete(new Path(full), true);

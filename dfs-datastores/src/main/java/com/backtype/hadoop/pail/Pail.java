@@ -177,7 +177,9 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
                 }
             }
         }
-        fs.mkdirs(pathp);
+        if (!fs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+        	fs.mkdirs(pathp);
+        }
         if(existing==null) {
             if(spec==null) spec = PailFormatFactory.getDefaultCopy();
             if(spec.getName()==null) spec = PailFormatFactory.getDefaultCopy().setStructure(spec.getStructure());
@@ -441,7 +443,9 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
 
         for(String name: p.getUserFileNames()) {
             String parent = new Path(name).getParent().toString();
-            _fs.mkdirs(new Path(getInstanceRoot() + "/" + parent));
+            if (!_fs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+            	_fs.mkdirs(new Path(getInstanceRoot() + "/" + parent));
+            }
             Path storedPath = p.toStoredPath(name);
             Path targetPath = toStoredPath(name);
             if(_fs.exists(targetPath) || args.renameMode == RenameMode.ALWAYS_RENAME) {
@@ -565,6 +569,9 @@ public class Pail<T> extends AbstractPail implements Iterable<T>{
 
     @Override
     protected boolean mkdirs(Path path) throws IOException {
+    	if (_fs.getClass().getName().equals("com.amazon.ws.emr.hadoop.fs.EmrFileSystem")) {
+    		return true;
+    	}
         return _fs.mkdirs(path);
     }
 
