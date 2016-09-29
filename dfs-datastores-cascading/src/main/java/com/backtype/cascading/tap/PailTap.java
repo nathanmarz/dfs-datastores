@@ -2,6 +2,7 @@ package com.backtype.cascading.tap;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -180,7 +181,7 @@ public class PailTap extends Hfs {
 
   }
 
-  private String _pailRoot;
+  protected String _pailRoot;
   private PailTapOptions _options;
 
   protected String getCategory(Object obj) {
@@ -249,6 +250,19 @@ public class PailTap extends Hfs {
     }
   }
 
+  public List<Path> getPaths() {
+      final List<Path> paths = new ArrayList<Path>();
+      if (_options.attrs != null && _options.attrs.length > 0) {
+          for (List<String> attr : _options.attrs) {
+              String rel = Utils.join(attr, "/");
+              paths.add(new Path(_pailRoot, rel));
+          }
+      } else {
+          paths.add(new Path(_pailRoot));
+      }
+      return paths;
+  }
+  
   private void makeLocal(JobConf conf, Path qualifiedPath, String infoMessage) {
     if (!conf.get("mapred.job.tracker", "").equalsIgnoreCase("local") && qualifiedPath.toUri()
         .getScheme().equalsIgnoreCase("file")) {

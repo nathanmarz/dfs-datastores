@@ -8,6 +8,13 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.jvyaml.YAML;
 
+import com.backtype.hadoop.pail.DefaultPailStructure;
+import com.backtype.hadoop.pail.PailSpec;
+import com.backtype.hadoop.pail.PailStructure;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +24,16 @@ public class PailSpec implements Writable, Serializable {
     private String name;
     private Map<String, Object> args;
     private PailStructure structure;
+        
+    static final private ObjectMapper mObjectMapper = new ObjectMapper();
+    static {
+        mObjectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+    }
 
     private static final PailStructure DEFAULT_STRUCTURE = new DefaultPailStructure();
 
     public PailSpec() {
-
+        
     }
 
     public PailSpec(String name) {
@@ -87,7 +99,7 @@ public class PailSpec implements Writable, Serializable {
         if(structure == null) return DEFAULT_STRUCTURE;
         else return structure;
     }
-
+    
 
     public static PailSpec readFromFileSystem(FileSystem fs, Path path) throws IOException {
         FSDataInputStream is = fs.open(path);
@@ -116,11 +128,32 @@ public class PailSpec implements Writable, Serializable {
         String name = (String) format.get("format");
         Map<String, Object> args = (Map<String, Object>) format.get("args");
         String structClass = (String) format.get("structure");
-        return new PailSpec(name, args, getStructureFromClass(structClass));
+        return new PailSpec(name, args, deserializePailStructure(structClass));
     }
 
     public void writeToStream(OutputStream os) {
         YAML.dump(mapify(), new OutputStreamWriter(os));
+    }
+    
+    static private PailStructure deserializePailStructure(String value) {    
+        try {
+            return getStructureFromClass(value);
+        } catch (Exception e) {
+            try {
+                return mObjectMapper.readValue(value, PailStructure.class);
+            } catch (IOException e1) {
+                throw new RuntimeException("cannot deserialize " + value + ": " + e1.getMessage());
+            }
+        }
+    }
+    
+    private String serializePailStructure() {
+        try {
+            String serialized = mObjectMapper.writeValueAsString(structure);
+            return serialized;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Map<String, Object> mapify() {
@@ -128,7 +161,7 @@ public class PailSpec implements Writable, Serializable {
         format.put("format", name);
         format.put("args", args);
         if(structure!=null) {
-            format.put("structure", structure.getClass().getName());
+            format.put("structure", serializePailStructure() );
         }
         return format;
     }

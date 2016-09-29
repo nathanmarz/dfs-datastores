@@ -7,7 +7,6 @@ import com.backtype.support.FSTestCase;
 import com.backtype.support.Utils;
 import cascading.flow.FlowException;
 import cascading.flow.FlowProcess;
-import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.operation.*;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;

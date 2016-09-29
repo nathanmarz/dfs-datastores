@@ -2,6 +2,8 @@ package com.backtype.hadoop.pail;
 
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.hadoop.pail.Pail.TypedRecordOutputStream;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -269,7 +271,7 @@ public class PailTest extends TestCase {
         assertPailContents(pail.getSubPail("z/a"), "za1", "za2");
 
         Pail a = new Pail(local, path + "/a");
-        os = a.openWrite();
+        os = (TypedRecordOutputStream) a.openWrite();
         os.writeObject("a2222");
         try {
             os.writeObject("zzz");

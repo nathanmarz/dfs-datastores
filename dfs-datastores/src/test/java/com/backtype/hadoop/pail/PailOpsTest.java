@@ -4,6 +4,8 @@ import com.backtype.hadoop.RenameMode;
 import com.backtype.hadoop.formats.RecordInputStream;
 import com.backtype.hadoop.formats.RecordOutputStream;
 import com.backtype.support.FSTestCase;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -428,6 +430,7 @@ public class PailOpsTest extends FSTestCase {
             return Collections.EMPTY_LIST;
         }
 
+        @JsonIgnore
         public Class getType() {
             return String.class;
         }
