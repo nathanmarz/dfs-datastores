@@ -1,14 +1,16 @@
 package com.backtype.hadoop.pail;
 
-import com.backtype.hadoop.formats.RecordInputStream;
-import com.backtype.hadoop.formats.RecordOutputStream;
-import com.backtype.support.Utils;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.Path;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
+
+import com.backtype.hadoop.formats.RecordInputStream;
+import com.backtype.hadoop.formats.RecordOutputStream;
+import com.backtype.support.Utils;
 
 
 public abstract class AbstractPail {
@@ -16,6 +18,8 @@ public abstract class AbstractPail {
     public static final String META_EXTENSION = ".metafile";
     public static final String META_TEMP_EXTENSION = ".metafiletmp";
     private static final String TEMP_EXTENSION = ".pailfiletmp";
+    
+    private final Logger mLogger = Logger.getLogger(getClass());
 
     private class PailOutputStream implements RecordOutputStream {
 
@@ -51,9 +55,26 @@ public abstract class AbstractPail {
 
         public void close() throws IOException {
             delegate.close();
-            if(!rename(tempFile, finalFile)) {
-                throw new IOException("Unable to atomically create pailfile with rename " + tempFile.toString());
+            for( int sleepTime=100; sleepTime <16000; sleepTime*=2 ) {
+                if(rename(tempFile, finalFile)) {
+                    return;
+                }
+                mLogger.warn("cannot rename temporary file to " + finalFile );
+                if( exists(finalFile) ) {
+                    mLogger.warn("finalFile already exists, attempting to delete");
+                    if( ! delete(finalFile,false) ) {
+                        mLogger.warn("cound not delete");
+                        throw new IOException("Unable to atomically create pailfile with rename " + tempFile.toString());
+                    }
+                }
+                try {
+                    mLogger.warn("retryiung in " + sleepTime  + " milliseconds");
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    ;
+                }
             }
+            throw new IOException("Unable to atomically create pailfile with rename " + tempFile.toString());
         }
 
         public void writeRaw(byte[] record, int start, int length) throws IOException {
